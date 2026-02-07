@@ -1,0 +1,77 @@
+/* Investment Asset Cards */
+.assetsContainer {
+  display: grid;
+  gap: 16px;
+}
+
+.assetCard {
+  background: linear-gradient(135deg, #ffffff 0%, #fffbfc 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 2px solid var(--beige);
+  transition: all 0.3s ease;
+}
+
+.assetCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 180, 188, 0.15);
+  border-color: var(--medium-pink);
+}
+
+.assetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.assetInfo h3 {
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+
+.assetType {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--light-pink);
+  color: var(--medium-pink);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Asset Statistics Grid */
+.assetStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.assetStat {
+  text-align: center;
+  padding: 8px;
+  background: var(--beige-light);
+  border-radius: 8px;
+}
+
+.assetStatLabel {
+  font-size: 0.75rem;
+  color: var(--gray-light);
+  margin-bottom: 4px;
+}
+
+.assetStatValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray);
+}
+
+/* Profit colors */
+.profitPositive {
+  color: #22c55e !important;
+}
+
+.profitNegative {
+  color: #ef4444 !important;
+}
