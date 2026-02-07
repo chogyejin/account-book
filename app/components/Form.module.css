@@ -1,0 +1,65 @@
+/* Form Styles - Minimal borders with focus effects */
+.formGroup {
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.formLabel {
+  display: block;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gray);
+  margin-bottom: 0.5rem;
+}
+
+/* Shared input styles */
+.formInput,
+.formTextarea,
+.formSelect {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--gray);
+  background: #fff5f7;
+  border: 2px solid var(--medium-pink);
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(232, 180, 188, 0.15);
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.formInput:hover,
+.formTextarea:hover,
+.formSelect:hover {
+  background: #ffffff;
+  border-color: #dc9aa5;
+  box-shadow: 0 4px 12px rgba(232, 180, 188, 0.2);
+  transform: translateY(-1px);
+}
+
+.formInput:focus,
+.formTextarea:focus,
+.formSelect:focus {
+  border-color: var(--medium-pink);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 4px rgba(232, 180, 188, 0.15),
+    0 6px 16px rgba(232, 180, 188, 0.25);
+  transform: translateY(-2px);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.formSelect {
+  cursor: pointer;
+}

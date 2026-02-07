@@ -1,0 +1,64 @@
+/* Category Tag Styles - Border-free with gradient selection */
+.categoryList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 5;
+}
+
+.categoryTag {
+  padding: 0.75rem 1rem;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--gray);
+  background: var(--ivory);
+  border: 1.5px solid var(--beige);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(107, 107, 107, 0.06);
+}
+
+.categoryTag:hover {
+  background: var(--light-pink);
+  border-color: var(--medium-pink);
+  color: var(--gray);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(232, 180, 188, 0.15);
+}
+
+.categoryTag.selected {
+  background: linear-gradient(135deg, var(--medium-pink) 0%, #dc9aa5 100%);
+  border-color: var(--medium-pink);
+  color: var(--ivory);
+  font-weight: 600;
+  box-shadow:
+    0 4px 12px rgba(232, 180, 188, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.categoryTag.selected:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow:
+    0 6px 16px rgba(232, 180, 188, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.categoryTag:active {
+  animation: pulse 0.3s ease;
+}

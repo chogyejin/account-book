@@ -1,0 +1,75 @@
+/* Card Styles - Financial app inspired */
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow:
+    0 4px 12px rgba(232, 180, 188, 0.12),
+    0 2px 4px rgba(107, 107, 107, 0.08);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(232, 180, 188, 0.1);
+  animation: cardFadeIn 0.5s ease-out;
+}
+
+.card:hover {
+  box-shadow:
+    0 8px 24px rgba(232, 180, 188, 0.18),
+    0 4px 8px rgba(107, 107, 107, 0.12);
+  transform: translateY(-4px);
+}
+
+/* Animation */
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered animation delays */
+.card:nth-child(1) {
+  animation-delay: 0s;
+}
+.card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.card:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.cardHeader {
+  border-bottom: 1px solid var(--beige);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.cardTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray);
+}
+
+.cardIcon {
+  font-size: 1.75rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    padding: 1.5rem;
+  }
+}
