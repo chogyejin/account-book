@@ -214,18 +214,6 @@ h4, h5, h6 {
 }
 
 /* ========================================
-   Tab Content
-   ======================================== */
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
-  animation: fadeIn 0.3s ease;
-}
-
-/* ========================================
    Stats Cards
    ======================================== */
 .stats-grid {
@@ -288,13 +276,6 @@ h4, h5, h6 {
 /* ========================================
    Tables
    ======================================== */
-.table-container {
-  overflow-x: auto;
-  border-radius: 12px;
-  background: var(--paper);
-  box-shadow: var(--shadow);
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -343,10 +324,6 @@ tbody tr:hover {
 
 .grid-3 {
   grid-template-columns: repeat(3, 1fr);
-}
-
-.grid-4 {
-  grid-template-columns: repeat(4, 1fr);
 }
 
 /* ========================================
@@ -418,28 +395,6 @@ tbody tr:hover {
   border-top-color: var(--medium-pink);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-}
-
-/* ========================================
-   Empty State
-   ======================================== */
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--ink-light);
-}
-
-.empty-state-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  opacity: 0.4;
-}
-
-.empty-state-text {
-  font-family: 'Pretendard', -apple-system, sans-serif;
-  font-size: 1rem;
-  font-weight: 400;
-  color: var(--ink-light);
 }
 
 /* ========================================
@@ -545,8 +500,7 @@ tbody tr:hover {
   }
 
   .grid-2,
-  .grid-3,
-  .grid-4 {
+  .grid-3 {
     grid-template-columns: 1fr;
   }
 }
