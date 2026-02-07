@@ -1,0 +1,84 @@
+/* Savings Account Cards */
+.accountsContainer {
+  display: grid;
+  gap: 16px;
+}
+
+.accountCard {
+  background: linear-gradient(135deg, #ffffff 0%, #fffbfc 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 2px solid var(--beige);
+  transition: all 0.3s ease;
+}
+
+.accountCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 180, 188, 0.15);
+  border-color: var(--medium-pink);
+}
+
+.accountHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.accountInfo h3 {
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+
+.accountType {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--light-pink);
+  color: var(--medium-pink);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.accountActions {
+  display: flex;
+  gap: 8px;
+}
+
+.accountBalance {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--medium-pink);
+  margin-bottom: 12px;
+}
+
+.accountProgress {
+  margin-top: 12px;
+}
+
+/* Progress Bar */
+.progressBar {
+  height: 8px;
+  background: var(--beige);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--medium-pink), #dc9aa5);
+  transition: width 0.6s ease;
+  animation: fillProgress 1s ease;
+}
+
+@keyframes fillProgress {
+  from {
+    width: 0;
+  }
+}
+
+.progressText {
+  font-size: 0.875rem;
+  color: var(--gray-light);
+}
