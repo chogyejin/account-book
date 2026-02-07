@@ -1,26 +1,552 @@
+/* ========================================
+   감성 재무 다이어리 - Modern Pastel
+   ======================================== */
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 @import "tailwindcss";
 
+/* ========================================
+   Tailwind Theme - CSS Variables as Tailwind tokens
+   ======================================== */
+@theme {
+  /* Custom colors */
+  --color-light-pink: #fdf0f2;
+  --color-medium-pink: #e8b4bc;
+  --color-ivory: #fffef9;
+  --color-beige: #f0ebe5;
+  --color-beige-light: #f5f2ed;
+  --color-light-gray: #e5e5e5;
+  --color-gray: #6b6b6b;
+  --color-gray-light: #a0a0a0;
+  --color-gray-pale: #e8e8e8;
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+}
+
+/* ========================================
+   CSS Variables - Pink Aesthetic Only
+   ======================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Pink Colors */
+  --light-pink: #fdf0f2;
+  --medium-pink: #e8b4bc;
+
+  /* Neutrals */
+  --ivory: #fffef9;
+  --beige: #f0ebe5;
+  --beige-light: #f5f2ed;
+  --light-gray: #e5e5e5;
+  --gray: #6b6b6b;
+  --gray-light: #a0a0a0;
+  --gray-pale: #e8e8e8;
+
+  /* Background */
+  --bg-base: var(--light-pink);
+  --bg-line: var(--beige);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(232, 180, 188, 0.08);
+  --shadow: 0 2px 6px rgba(232, 180, 188, 0.12);
+  --shadow-md: 0 3px 12px rgba(232, 180, 188, 0.15);
+
+  /* Compatibility aliases */
+  --pink-bg: var(--light-pink);
+  --pink-vivid: var(--medium-pink);
+  --pink-light: #fce8eb;
+  --pink-pale: rgba(232, 180, 188, 0.2);
+  --paper: #ffffff;
+  --cream: var(--beige-light);
+  --ink: var(--gray);
+  --ink-light: var(--gray-light);
+  --brown-dark: var(--gray);
+  --brown-light: var(--beige);
+  --gray-dark: #4a4a4a;
+  --gray-medium: #8a8a8a;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ========================================
+   Base
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-size: 16px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-weight: 400;
+  color: var(--gray);
+  background: var(--bg-base);
+  line-height: 1.6;
+  position: relative;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Background striped pattern */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--bg-base) 0px,
+    var(--bg-base) 80px,
+    var(--bg-line) 80px,
+    var(--bg-line) 81px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========================================
+   Typography
+   ======================================== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  line-height: 1.4;
+  color: var(--gray);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+h4, h5, h6 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* ========================================
+   Page Header
+   ======================================== */
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2.5rem 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 12px rgba(232, 180, 188, 0.12),
+    0 2px 4px rgba(107, 107, 107, 0.08);
+  animation: headerSlideIn 0.6s ease-out;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gray);
+  margin-bottom: 0.5rem;
+  animation: titleFadeIn 0.8s ease-out 0.2s both;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--gray-light);
+  font-weight: 400;
+  animation: titleFadeIn 0.8s ease-out 0.3s both;
+}
+
+/* ========================================
+   Tabs
+   ======================================== */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--gray-pale);
+  padding-bottom: 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--gray-light);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--gray);
+}
+
+.tab.active {
+  color: var(--medium-pink);
+  border-bottom-color: var(--medium-pink);
+  font-weight: 600;
+}
+
+/* ========================================
+   Tab Content
+   ======================================== */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+/* ========================================
+   Stats Cards
+   ======================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fffbfc 100%);
+  border-radius: 16px;
+  padding: 1.75rem;
+  text-align: center;
+  box-shadow:
+    0 4px 12px rgba(232, 180, 188, 0.12),
+    0 2px 4px rgba(107, 107, 107, 0.08);
+  border: 1px solid rgba(232, 180, 188, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: statFadeIn 0.6s ease-out both;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 8px 24px rgba(232, 180, 188, 0.18),
+    0 4px 8px rgba(107, 107, 107, 0.12);
+  border-color: var(--medium-pink);
+}
+
+.stat-label {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--gray-light);
+  margin-bottom: 0.75rem;
+}
+
+.stat-value {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--gray);
+  animation: numberCountUp 0.8s ease-out;
+}
+
+.stat-value.positive {
+  color: var(--medium-pink);
+}
+
+.stat-value.negative {
+  color: var(--gray-light);
+}
+
+/* ========================================
+   Tables
+   ======================================== */
+.table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+}
+
+thead {
+  background: var(--cream);
+}
+
+th {
+  padding: 1rem;
+  text-align: left;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-weight: 600;
+  color: var(--gray);
+  font-size: 0.9375rem;
+  border-bottom: 1px solid var(--beige);
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--beige-light);
+  color: var(--gray);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: var(--light-pink);
+}
+
+/* ========================================
+   Grid Utilities
+   ======================================== */
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* ========================================
+   Global Category Tags (still used in tables)
+   ======================================== */
+.category-tag {
+  padding: 0.5rem 0.75rem;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray);
+  background: var(--ivory);
+  border: 1.5px solid var(--beige);
+  border-radius: 8px;
+  display: inline-block;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(107, 107, 107, 0.06);
+}
+
+.category-tag.selected {
+  background: linear-gradient(135deg, var(--medium-pink) 0%, #dc9aa5 100%);
+  border-color: var(--medium-pink);
+  color: var(--ivory);
+  font-weight: 600;
+}
+
+/* ========================================
+   Toast
+   ======================================== */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+  max-width: 400px;
+}
+
+.toast.success {
+  background: var(--medium-pink);
+  color: var(--ivory);
+}
+
+.toast.error {
+  background: var(--light-pink);
+  color: var(--gray);
+}
+
+.toast.warning {
+  background: var(--beige);
+  color: var(--gray);
+}
+
+/* ========================================
+   Spinner
+   ======================================== */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--beige);
+  border-top-color: var(--medium-pink);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ========================================
+   Empty State
+   ======================================== */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--ink-light);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+}
+
+.empty-state-text {
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ink-light);
+}
+
+/* ========================================
+   Keyframe Animations
+   ======================================== */
+@keyframes headerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes titleFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes statFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes numberCountUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+
+  .page-header {
+    padding: 2rem 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+  }
+
+  .tab {
+    padding: 0.625rem 1rem;
+    font-size: 0.9375rem;
+  }
+
+  .toast {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
 }
