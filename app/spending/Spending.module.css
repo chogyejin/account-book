@@ -1,0 +1,53 @@
+/* Category Breakdown Styles */
+.categoryBreakdown {
+  padding: 1rem 0;
+}
+
+.categoryItem {
+  padding: 1rem;
+  background: var(--light-pink);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.categoryItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.categoryBar {
+  height: 12px;
+  background: var(--gray-light);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.categoryBarFill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fillBar 1.5s ease;
+}
+
+@keyframes fillBar {
+  from {
+    width: 0;
+  }
+}
+
+/* Pagination Styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.paginationNumbers {
+  display: flex;
+  gap: 0.5rem;
+}
