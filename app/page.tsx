@@ -10,99 +10,24 @@ import FormTextarea from './components/FormTextarea';
 import CategoryTag from './components/CategoryTag';
 import { useToast } from './components/ToastProvider';
 import { CONFIG } from '../lib/config';
-import API from '../lib/api';
-import { getTodayString } from '../lib/utils';
-
-const TABS = [
-  { id: 'expense', label: '💸 지출' },
-  { id: 'income', label: '💰 Income' },
-  { id: 'savings', label: '🏦 Savings' },
-  { id: 'investment', label: '📈 Invest' },
-];
+import { TABS } from './constants/quickEntry';
+import {
+  useExpenseForm,
+  useIncomeForm,
+  useSavingsForm,
+  useInvestmentForm,
+} from './hooks/useQuickEntryForms';
 
 export default function QuickEntry() {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('expense');
-  const [loading, setLoading] = useState(false);
-  const today = getTodayString();
 
-  const [expenseForm, setExpenseForm] = useState({ date: today, amount: '', memo: '' });
-  const [expenseCategory, setExpenseCategory] = useState('');
+  const expense = useExpenseForm(showToast);
+  const income = useIncomeForm(showToast);
+  const savings = useSavingsForm(showToast);
+  const investment = useInvestmentForm(showToast);
 
-  const [incomeForm, setIncomeForm] = useState({ date: today, amount: '', memo: '' });
-  const [incomeCategory, setIncomeCategory] = useState('');
-
-  const [savingsForm, setSavingsForm] = useState({ date: today, amount: '', memo: '' });
-  const [savingsCategory, setSavingsCategory] = useState('');
-
-  const [investmentForm, setInvestmentForm] = useState({ date: today, type: '', name: '', amount: '', memo: '' });
-  const [investmentCategory, setInvestmentCategory] = useState('');
-
-  const handleExpenseSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!expenseCategory) { showToast('카테고리를 선택해주세요 ⚠️', 'warning'); return; }
-    if (!expenseForm.date || !expenseForm.amount) { showToast('날짜와 금액을 입력해주세요 ⚠️', 'warning'); return; }
-    try {
-      setLoading(true);
-      const res = await API.createExpense({ ...expenseForm, category: expenseCategory });
-      setLoading(false);
-      if (res.success) {
-        showToast('지출이 기록되었습니다 ✅', 'success');
-        setExpenseForm({ date: today, amount: '', memo: '' });
-        setExpenseCategory('');
-      } else {
-        showToast(`저장에 실패했습니다 ❌`, 'error');
-      }
-    } catch { setLoading(false); showToast('저장에 실패했습니다 ❌', 'error'); }
-  };
-
-  const handleIncomeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!incomeCategory) { showToast('카테고리를 선택해주세요 ⚠️', 'warning'); return; }
-    try {
-      setLoading(true);
-      const res = await API.createIncome({ ...incomeForm, category: incomeCategory });
-      setLoading(false);
-      if (res.success) {
-        showToast('Income이 기록되었습니다 ✅', 'success');
-        setIncomeForm({ date: today, amount: '', memo: '' });
-        setIncomeCategory('');
-      } else { showToast('저장에 실패했습니다 ❌', 'error'); }
-    } catch { setLoading(false); showToast('저장에 실패했습니다 ❌', 'error'); }
-  };
-
-  const handleSavingsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!savingsCategory) { showToast('Savings 종류를 선택해주세요 ⚠️', 'warning'); return; }
-    try {
-      setLoading(true);
-      const res = await API.createSavings({ ...savingsForm, category: savingsCategory });
-      setLoading(false);
-      if (res.success) {
-        showToast('Savings이 기록되었습니다 ✅', 'success');
-        setSavingsForm({ date: today, amount: '', memo: '' });
-        setSavingsCategory('');
-      } else { showToast('저장에 실패했습니다 ❌', 'error'); }
-    } catch { setLoading(false); showToast('저장에 실패했습니다 ❌', 'error'); }
-  };
-
-  const handleInvestmentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!investmentCategory) { showToast('Invest 종류를 선택해주세요 ⚠️', 'warning'); return; }
-    try {
-      setLoading(true);
-      const res = await API.createInvestment({
-        date: investmentForm.date, type: investmentForm.type, name: investmentForm.name,
-        investmentType: investmentCategory, amount: investmentForm.amount, memo: investmentForm.memo,
-      });
-      setLoading(false);
-      if (res.success) {
-        showToast('Invest가 기록되었습니다 ✅', 'success');
-        setInvestmentForm({ date: today, type: '', name: '', amount: '', memo: '' });
-        setInvestmentCategory('');
-      } else { showToast('저장에 실패했습니다 ❌', 'error'); }
-    } catch { setLoading(false); showToast('저장에 실패했습니다 ❌', 'error'); }
-  };
+  const isLoading = expense.loading || income.loading || savings.loading || investment.loading;
 
   return (
     <>
@@ -126,13 +51,13 @@ export default function QuickEntry() {
             <CardHeader title="지출 기록하기" icon="💸">
               <span className="text-gray-light font-light">오늘 쓴 돈을 기록해보세요</span>
             </CardHeader>
-            <form onSubmit={handleExpenseSubmit}>
+            <form onSubmit={expense.handleSubmit}>
               <div className="grid grid-2">
                 <FormInput
                   type="date"
                   label="📅 날짜"
-                  value={expenseForm.date}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })}
+                  value={expense.form.date}
+                  onChange={(e) => expense.setForm({ ...expense.form, date: e.target.value })}
                   required
                 />
                 <FormInput
@@ -140,23 +65,23 @@ export default function QuickEntry() {
                   label="💵 금액"
                   placeholder="15000"
                   min="0"
-                  value={expenseForm.amount}
-                  onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
+                  value={expense.form.amount}
+                  onChange={(e) => expense.setForm({ ...expense.form, amount: e.target.value })}
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">🏷️ 카테고리</label>
                 <CategoryTag
                   categories={CONFIG.DEFAULT_CATEGORIES.expense}
-                  selectedCategory={expenseCategory}
-                  onSelectCategory={setExpenseCategory}
+                  selectedCategory={expense.category}
+                  onSelectCategory={expense.setCategory}
                 />
               </div>
               <FormTextarea
                 label="📝 메모"
                 placeholder="무엇을 구매하셨나요?"
-                value={expenseForm.memo}
-                onChange={(e) => setExpenseForm({ ...expenseForm, memo: e.target.value })}
+                value={expense.form.memo}
+                onChange={(e) => expense.setForm({ ...expense.form, memo: e.target.value })}
               />
               <Button type="submit" variant="primary" block>
                 ✍️ 지출 기록하기
@@ -170,13 +95,13 @@ export default function QuickEntry() {
             <CardHeader title="Income 기록하기" icon="💰">
               <span className="text-gray-light font-light">들어온 돈을 기록해보세요</span>
             </CardHeader>
-            <form onSubmit={handleIncomeSubmit}>
+            <form onSubmit={income.handleSubmit}>
               <div className="grid grid-2">
                 <FormInput
                   type="date"
                   label="📅 날짜"
-                  value={incomeForm.date}
-                  onChange={(e) => setIncomeForm({ ...incomeForm, date: e.target.value })}
+                  value={income.form.date}
+                  onChange={(e) => income.setForm({ ...income.form, date: e.target.value })}
                   required
                 />
                 <FormInput
@@ -184,23 +109,23 @@ export default function QuickEntry() {
                   label="💵 금액"
                   placeholder="3500000"
                   min="0"
-                  value={incomeForm.amount}
-                  onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })}
+                  value={income.form.amount}
+                  onChange={(e) => income.setForm({ ...income.form, amount: e.target.value })}
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">🏷️ 카테고리</label>
                 <CategoryTag
                   categories={CONFIG.DEFAULT_CATEGORIES.income}
-                  selectedCategory={incomeCategory}
-                  onSelectCategory={setIncomeCategory}
+                  selectedCategory={income.category}
+                  onSelectCategory={income.setCategory}
                 />
               </div>
               <FormTextarea
                 label="📝 메모"
                 placeholder="어디서 받으셨나요?"
-                value={incomeForm.memo}
-                onChange={(e) => setIncomeForm({ ...incomeForm, memo: e.target.value })}
+                value={income.form.memo}
+                onChange={(e) => income.setForm({ ...income.form, memo: e.target.value })}
               />
               <Button type="submit" variant="primary" block>
                 ✍️ Income 기록하기
@@ -214,13 +139,13 @@ export default function QuickEntry() {
             <CardHeader title="Savings 기록하기" icon="🏦">
               <span className="text-gray-light font-light">모은 돈을 기록해보세요</span>
             </CardHeader>
-            <form onSubmit={handleSavingsSubmit}>
+            <form onSubmit={savings.handleSubmit}>
               <div className="grid grid-2">
                 <FormInput
                   type="date"
                   label="📅 날짜"
-                  value={savingsForm.date}
-                  onChange={(e) => setSavingsForm({ ...savingsForm, date: e.target.value })}
+                  value={savings.form.date}
+                  onChange={(e) => savings.setForm({ ...savings.form, date: e.target.value })}
                   required
                 />
                 <FormInput
@@ -228,23 +153,23 @@ export default function QuickEntry() {
                   label="💵 금액"
                   placeholder="500000"
                   min="0"
-                  value={savingsForm.amount}
-                  onChange={(e) => setSavingsForm({ ...savingsForm, amount: e.target.value })}
+                  value={savings.form.amount}
+                  onChange={(e) => savings.setForm({ ...savings.form, amount: e.target.value })}
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">🏷️ Savings 종류</label>
                 <CategoryTag
                   categories={CONFIG.DEFAULT_CATEGORIES.savings}
-                  selectedCategory={savingsCategory}
-                  onSelectCategory={setSavingsCategory}
+                  selectedCategory={savings.category}
+                  onSelectCategory={savings.setCategory}
                 />
               </div>
               <FormTextarea
                 label="📝 메모"
                 placeholder="어디에 Savings하셨나요?"
-                value={savingsForm.memo}
-                onChange={(e) => setSavingsForm({ ...savingsForm, memo: e.target.value })}
+                value={savings.form.memo}
+                onChange={(e) => savings.setForm({ ...savings.form, memo: e.target.value })}
               />
               <Button type="submit" variant="primary" block>
                 ✍️ Savings 기록하기
@@ -258,19 +183,19 @@ export default function QuickEntry() {
             <CardHeader title="Invest 기록하기" icon="📈">
               <span className="text-gray-light font-light">Invest 내역을 기록해보세요</span>
             </CardHeader>
-            <form onSubmit={handleInvestmentSubmit}>
+            <form onSubmit={investment.handleSubmit}>
               <div className="grid grid-2">
                 <FormInput
                   type="date"
                   label="📅 날짜"
-                  value={investmentForm.date}
-                  onChange={(e) => setInvestmentForm({ ...investmentForm, date: e.target.value })}
+                  value={investment.form.date}
+                  onChange={(e) => investment.setForm({ ...investment.form, date: e.target.value })}
                   required
                 />
                 <FormSelect
                   label="📊 거래 유형"
-                  value={investmentForm.type}
-                  onChange={(e) => setInvestmentForm({ ...investmentForm, type: e.target.value })}
+                  value={investment.form.type}
+                  onChange={(e) => investment.setForm({ ...investment.form, type: e.target.value })}
                   required
                 >
                   <option value="">선택하세요</option>
@@ -283,31 +208,31 @@ export default function QuickEntry() {
                   type="text"
                   label="🏢 종목명"
                   placeholder="삼성전자"
-                  value={investmentForm.name}
-                  onChange={(e) => setInvestmentForm({ ...investmentForm, name: e.target.value })}
+                  value={investment.form.name}
+                  onChange={(e) => investment.setForm({ ...investment.form, name: e.target.value })}
                 />
                 <FormInput
                   type="number"
                   label="💰 금액"
                   placeholder="1000000"
                   min="0"
-                  value={investmentForm.amount}
-                  onChange={(e) => setInvestmentForm({ ...investmentForm, amount: e.target.value })}
+                  value={investment.form.amount}
+                  onChange={(e) => investment.setForm({ ...investment.form, amount: e.target.value })}
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">🏷️ Invest 종류</label>
                 <CategoryTag
                   categories={CONFIG.DEFAULT_CATEGORIES.investment}
-                  selectedCategory={investmentCategory}
-                  onSelectCategory={setInvestmentCategory}
+                  selectedCategory={investment.category}
+                  onSelectCategory={investment.setCategory}
                 />
               </div>
               <FormTextarea
                 label="📝 메모"
                 placeholder="Invest 이유나 전략을 적어보세요"
-                value={investmentForm.memo}
-                onChange={(e) => setInvestmentForm({ ...investmentForm, memo: e.target.value })}
+                value={investment.form.memo}
+                onChange={(e) => investment.setForm({ ...investment.form, memo: e.target.value })}
               />
               <Button type="submit" variant="primary" block>
                 ✍️ Invest 기록하기
@@ -317,7 +242,7 @@ export default function QuickEntry() {
         )}
       </div>
 
-      {loading && <div className="spinner" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 9999 }} />}
+      {isLoading && <div className="spinner" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 9999 }} />}
     </>
   );
 }
