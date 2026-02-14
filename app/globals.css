@@ -2,7 +2,7 @@
    감성 재무 다이어리 - Modern Pastel
    ======================================== */
 
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
 @import "tailwindcss";
 
 /* ========================================
@@ -75,10 +75,12 @@
 /* ========================================
    Base
    ======================================== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 }
 
 html {
@@ -86,7 +88,12 @@ html {
 }
 
 body {
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   font-weight: 400;
   color: var(--gray);
   background: var(--bg-base);
@@ -98,7 +105,7 @@ body {
 
 /* Background striped pattern */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -118,8 +125,16 @@ body::before {
 /* ========================================
    Typography
    ======================================== */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Pretendard', -apple-system, sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
   line-height: 1.4;
   color: var(--gray);
   letter-spacing: -0.02em;
@@ -140,7 +155,9 @@ h3 {
   font-weight: 600;
 }
 
-h4, h5, h6 {
+h4,
+h5,
+h6 {
   font-size: 1rem;
   font-weight: 500;
 }
@@ -190,7 +207,10 @@ h4, h5, h6 {
 
 .tab {
   padding: 0.75rem 1.5rem;
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
   font-size: 1rem;
   font-weight: 500;
   color: var(--gray-light);
@@ -236,10 +256,18 @@ h4, h5, h6 {
   animation: statFadeIn 0.6s ease-out both;
 }
 
-.stat-card:nth-child(1) { animation-delay: 0.1s; }
-.stat-card:nth-child(2) { animation-delay: 0.2s; }
-.stat-card:nth-child(3) { animation-delay: 0.3s; }
-.stat-card:nth-child(4) { animation-delay: 0.4s; }
+.stat-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.stat-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.stat-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.stat-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
 
 .stat-card:hover {
   transform: translateY(-4px) scale(1.02);
@@ -250,7 +278,10 @@ h4, h5, h6 {
 }
 
 .stat-label {
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
   font-size: 0.9375rem;
   font-weight: 500;
   color: var(--gray-light);
@@ -258,7 +289,10 @@ h4, h5, h6 {
 }
 
 .stat-value {
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
   font-size: 1.875rem;
   font-weight: 700;
   color: var(--gray);
@@ -279,7 +313,10 @@ h4, h5, h6 {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
 }
 
 thead {
@@ -289,7 +326,10 @@ thead {
 th {
   padding: 1rem;
   text-align: left;
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
   font-weight: 600;
   color: var(--gray);
   font-size: 0.9375rem;
@@ -331,7 +371,10 @@ tbody tr:hover {
    ======================================== */
 .category-tag {
   padding: 0.5rem 0.75rem;
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--gray);
@@ -362,7 +405,10 @@ tbody tr:hover {
   color: var(--ink);
   border-radius: 8px;
   box-shadow: var(--shadow-md);
-  font-family: 'Pretendard', -apple-system, sans-serif;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
   font-size: 1rem;
   font-weight: 500;
   z-index: 1000;
@@ -465,7 +511,9 @@ tbody tr:hover {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ========================================
