@@ -1,5 +1,5 @@
-import clsx from 'clsx';
-import styles from './CategoryTag.module.css';
+import clsx from "clsx";
+import styles from "./CategoryTag.module.css";
 
 interface CategoryTagProps {
   categories: string[];
@@ -20,7 +20,10 @@ export default function CategoryTag({
         <button
           key={cat}
           type="button"
-          className={clsx(styles.categoryTag, selectedCategory === cat && styles.selected)}
+          className={clsx(
+            styles.categoryTag,
+            selectedCategory === cat && styles.selected,
+          )}
           onClick={() => onSelectCategory(cat)}
         >
           {cat}

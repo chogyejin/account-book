@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import clsx from 'clsx';
-import styles from './Nav.module.css';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import clsx from "clsx";
+import styles from "./Nav.module.css";
 
 const NAV_LINKS = [
-  { href: '/', label: 'Quick Entry' },
-  { href: '/spending', label: 'Spending' },
-  { href: '/monthly', label: 'Monthly' },
-  { href: '/income', label: 'Income' },
-  { href: '/savings', label: 'Savings' },
-  { href: '/investments', label: 'Invest' },
-  { href: '/annual', label: 'Annual' },
+  { href: "/", label: "Quick Entry" },
+  { href: "/spending", label: "Spending" },
+  { href: "/monthly", label: "Monthly" },
+  { href: "/income", label: "Income" },
+  { href: "/savings", label: "Savings" },
+  { href: "/investments", label: "Invest" },
+  { href: "/annual", label: "Annual" },
 ];
 
 export default function Nav() {
@@ -29,7 +29,10 @@ export default function Nav() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className={clsx(styles.navLink, pathname === link.href && styles.active)}
+                className={clsx(
+                  styles.navLink,
+                  pathname === link.href && styles.active,
+                )}
               >
                 {link.label}
               </Link>
