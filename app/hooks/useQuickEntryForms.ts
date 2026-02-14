@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import API from '../../lib/api';
-import { getTodayString } from '../../lib/utils';
+import { useState } from "react";
+import API from "../../lib/api";
+import { getTodayString } from "../../lib/utils";
 
 interface ToastFunction {
-  (message: string, type: 'success' | 'error' | 'warning'): void;
+  (message: string, type: "success" | "error" | "warning"): void;
 }
 
 interface ExpenseFormData {
@@ -21,6 +21,7 @@ interface IncomeFormData {
 interface SavingsFormData {
   date: string;
   amount: string;
+  account: string;
   memo: string;
 }
 
@@ -29,23 +30,28 @@ interface InvestmentFormData {
   type: string;
   name: string;
   amount: string;
+  currentPrice: string;
   memo: string;
 }
 
 export function useExpenseForm(showToast: ToastFunction) {
   const today = getTodayString();
-  const [form, setForm] = useState<ExpenseFormData>({ date: today, amount: '', memo: '' });
-  const [category, setCategory] = useState('');
+  const [form, setForm] = useState<ExpenseFormData>({
+    date: today,
+    amount: "",
+    memo: "",
+  });
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category) {
-      showToast('카테고리를 선택해주세요 ⚠️', 'warning');
+      showToast("카테고리를 선택해주세요 ⚠️", "warning");
       return;
     }
     if (!form.date || !form.amount) {
-      showToast('날짜와 금액을 입력해주세요 ⚠️', 'warning');
+      showToast("날짜와 금액을 입력해주세요 ⚠️", "warning");
       return;
     }
 
@@ -55,15 +61,15 @@ export function useExpenseForm(showToast: ToastFunction) {
       setLoading(false);
 
       if (res.success) {
-        showToast('지출이 기록되었습니다 ✅', 'success');
-        setForm({ date: today, amount: '', memo: '' });
-        setCategory('');
+        showToast("지출이 기록되었습니다 ✅", "success");
+        setForm({ date: today, amount: "", memo: "" });
+        setCategory("");
       } else {
-        showToast('저장에 실패했습니다 ❌', 'error');
+        showToast("저장에 실패했습니다 ❌", "error");
       }
     } catch {
       setLoading(false);
-      showToast('저장에 실패했습니다 ❌', 'error');
+      showToast("저장에 실패했습니다 ❌", "error");
     }
   };
 
@@ -72,14 +78,18 @@ export function useExpenseForm(showToast: ToastFunction) {
 
 export function useIncomeForm(showToast: ToastFunction) {
   const today = getTodayString();
-  const [form, setForm] = useState<IncomeFormData>({ date: today, amount: '', memo: '' });
-  const [category, setCategory] = useState('');
+  const [form, setForm] = useState<IncomeFormData>({
+    date: today,
+    amount: "",
+    memo: "",
+  });
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category) {
-      showToast('카테고리를 선택해주세요 ⚠️', 'warning');
+      showToast("카테고리를 선택해주세요 ⚠️", "warning");
       return;
     }
 
@@ -89,15 +99,15 @@ export function useIncomeForm(showToast: ToastFunction) {
       setLoading(false);
 
       if (res.success) {
-        showToast('Income이 기록되었습니다 ✅', 'success');
-        setForm({ date: today, amount: '', memo: '' });
-        setCategory('');
+        showToast("Income이 기록되었습니다 ✅", "success");
+        setForm({ date: today, amount: "", memo: "" });
+        setCategory("");
       } else {
-        showToast('저장에 실패했습니다 ❌', 'error');
+        showToast("저장에 실패했습니다 ❌", "error");
       }
     } catch {
       setLoading(false);
-      showToast('저장에 실패했습니다 ❌', 'error');
+      showToast("저장에 실패했습니다 ❌", "error");
     }
   };
 
@@ -106,14 +116,19 @@ export function useIncomeForm(showToast: ToastFunction) {
 
 export function useSavingsForm(showToast: ToastFunction) {
   const today = getTodayString();
-  const [form, setForm] = useState<SavingsFormData>({ date: today, amount: '', memo: '' });
-  const [category, setCategory] = useState('');
+  const [form, setForm] = useState<SavingsFormData>({
+    date: today,
+    amount: "",
+    account: "",
+    memo: "",
+  });
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category) {
-      showToast('Savings 종류를 선택해주세요 ⚠️', 'warning');
+      showToast("Savings 종류를 선택해주세요 ⚠️", "warning");
       return;
     }
 
@@ -123,15 +138,15 @@ export function useSavingsForm(showToast: ToastFunction) {
       setLoading(false);
 
       if (res.success) {
-        showToast('Savings이 기록되었습니다 ✅', 'success');
-        setForm({ date: today, amount: '', memo: '' });
-        setCategory('');
+        showToast("Savings이 기록되었습니다 ✅", "success");
+        setForm({ date: today, amount: "", account: "", memo: "" });
+        setCategory("");
       } else {
-        showToast('저장에 실패했습니다 ❌', 'error');
+        showToast("저장에 실패했습니다 ❌", "error");
       }
     } catch {
       setLoading(false);
-      showToast('저장에 실패했습니다 ❌', 'error');
+      showToast("저장에 실패했습니다 ❌", "error");
     }
   };
 
@@ -142,18 +157,19 @@ export function useInvestmentForm(showToast: ToastFunction) {
   const today = getTodayString();
   const [form, setForm] = useState<InvestmentFormData>({
     date: today,
-    type: '',
-    name: '',
-    amount: '',
-    memo: '',
+    type: "",
+    name: "",
+    amount: "",
+    currentPrice: "",
+    memo: "",
   });
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category) {
-      showToast('Invest 종류를 선택해주세요 ⚠️', 'warning');
+      showToast("Invest 종류를 선택해주세요 ⚠️", "warning");
       return;
     }
 
@@ -165,20 +181,28 @@ export function useInvestmentForm(showToast: ToastFunction) {
         name: form.name,
         investmentType: category,
         amount: form.amount,
+        currentPrice: form.currentPrice,
         memo: form.memo,
       });
       setLoading(false);
 
       if (res.success) {
-        showToast('Invest가 기록되었습니다 ✅', 'success');
-        setForm({ date: today, type: '', name: '', amount: '', memo: '' });
-        setCategory('');
+        showToast("Invest가 기록되었습니다 ✅", "success");
+        setForm({
+          date: today,
+          type: "",
+          name: "",
+          amount: "",
+          currentPrice: "",
+          memo: "",
+        });
+        setCategory("");
       } else {
-        showToast('저장에 실패했습니다 ❌', 'error');
+        showToast("저장에 실패했습니다 ❌", "error");
       }
     } catch {
       setLoading(false);
-      showToast('저장에 실패했습니다 ❌', 'error');
+      showToast("저장에 실패했습니다 ❌", "error");
     }
   };
 
