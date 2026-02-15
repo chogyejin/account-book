@@ -8,11 +8,10 @@ import styles from "./Nav.module.css";
 const NAV_LINKS = [
   { href: "/", label: "Quick Entry" },
   { href: "/spending", label: "Spending" },
-  { href: "/monthly", label: "Monthly" },
   { href: "/income", label: "Income" },
   { href: "/savings", label: "Savings" },
   { href: "/investments", label: "Invest" },
-  { href: "/annual", label: "Annual" },
+  { href: "/summary", label: "Summary" },
 ];
 
 export default function Nav() {
