@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardHeader } from "../components/Card";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
@@ -28,27 +28,26 @@ export default function SpendingClient() {
     memo: "",
   });
 
-  const fetchExpenses = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await SheetsAPI.expenses.list();
-      if (result.success && result.data) {
-        const data = result.data.filter((e) => e.id);
-        data.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-        );
-        setExpenses(data);
-      }
-    } catch {
-      showToast("데이터를 불러오지 못했습니다 ❌", "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [showToast]);
-
   useEffect(() => {
+    const fetchExpenses = async () => {
+      setLoading(true);
+      try {
+        const result = await SheetsAPI.expenses.list();
+        if (result.success && result.data) {
+          const data = result.data.filter((e) => e.id);
+          data.sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+          );
+          setExpenses(data);
+        }
+      } catch {
+        showToast("데이터를 불러오지 못했습니다 ❌", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchExpenses();
-  }, [fetchExpenses]);
+  }, [showToast]);
 
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
