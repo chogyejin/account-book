@@ -10,19 +10,8 @@ import FormTextarea from "../components/FormTextarea";
 import Modal, { ModalClose } from "../components/Modal";
 import { useToast } from "../components/ToastProvider";
 import { formatDate, formatAmount, getTodayString } from "../../lib/utils";
+import { SheetsAPI, type InvestmentTransaction } from "../../lib/sheets-api";
 import styles from "./Investments.module.css";
-
-interface InvestmentTransaction {
-  id: string;
-  date: string;
-  type: string;
-  name: string;
-  investmentType: string;
-  amount: string;
-  currentPrice: string;
-  memo: string;
-  createdAt: string;
-}
 
 interface AssetSummary {
   name: string;
@@ -53,14 +42,9 @@ export default function InvestmentsClient() {
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        "/api/sheets?sheet=investments_transactions&action=list",
-      );
-      const result = await res.json();
-      if (result.success) {
-        const data: InvestmentTransaction[] = (
-          result.data as InvestmentTransaction[]
-        ).filter((t) => t.id);
+      const result = await SheetsAPI.investments.list();
+      if (result.success && result.data) {
+        const data = result.data.filter((t) => t.id);
         data.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );
@@ -145,18 +129,7 @@ export default function InvestmentsClient() {
       if (editTxnId) {
         const txn = transactions.find((t) => t.id === editTxnId);
         if (!txn) return;
-        const res = await fetch("/api/sheets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sheet: "investments_transactions",
-            action: "update",
-            ...txn,
-            ...txnForm,
-            id: editTxnId,
-          }),
-        });
-        const result = await res.json();
+        const result = await SheetsAPI.investments.update(txn, txnForm);
         if (result.success) {
           setTransactions((prev) =>
             prev.map((t) => (t.id === editTxnId ? { ...t, ...txnForm } : t)),
@@ -166,16 +139,7 @@ export default function InvestmentsClient() {
           showToast("수정 실패 ❌", "error");
         }
       } else {
-        const res = await fetch("/api/sheets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sheet: "investments_transactions",
-            action: "create",
-            ...txnForm,
-          }),
-        });
-        const result = await res.json();
+        const result = await SheetsAPI.investments.create(txnForm);
         if (result.success) {
           showToast("거래가 기록되었습니다 ✅", "success");
           await fetchTransactions();
@@ -192,16 +156,7 @@ export default function InvestmentsClient() {
   const handleDeleteTransaction = async (id: string) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
-      const res = await fetch("/api/sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sheet: "investments_transactions",
-          action: "delete",
-          id,
-        }),
-      });
-      const result = await res.json();
+      const result = await SheetsAPI.investments.delete(id);
       if (result.success) {
         setTransactions((prev) => prev.filter((t) => t.id !== id));
         showToast("거래가 삭제되었습니다 🗑️", "success");

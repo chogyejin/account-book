@@ -10,15 +10,7 @@ import FormTextarea from "../components/FormTextarea";
 import Modal, { ModalClose } from "../components/Modal";
 import { useToast } from "../components/ToastProvider";
 import { formatDate, formatAmount, getTodayString } from "../../lib/utils";
-
-interface IncomeItem {
-  id: string;
-  date: string;
-  category: string;
-  amount: string;
-  memo: string;
-  createdAt: string;
-}
+import { SheetsAPI, type IncomeItem } from "../../lib/sheets-api";
 
 export default function IncomeClient() {
   const { showToast } = useToast();
@@ -40,12 +32,9 @@ export default function IncomeClient() {
   const fetchIncomes = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/sheets?sheet=income&action=list");
-      const result = await res.json();
-      if (result.success) {
-        const data: IncomeItem[] = (result.data as IncomeItem[]).filter(
-          (i) => i.id,
-        );
+      const result = await SheetsAPI.income.list();
+      if (result.success && result.data) {
+        const data = result.data.filter((i) => i.id);
         data.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );
@@ -131,18 +120,7 @@ export default function IncomeClient() {
       if (editId) {
         const item = allIncomes.find((i) => i.id === editId);
         if (!item) return;
-        const res = await fetch("/api/sheets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sheet: "income",
-            action: "update",
-            ...item,
-            ...form,
-            id: editId,
-          }),
-        });
-        const result = await res.json();
+        const result = await SheetsAPI.income.update(item, form);
         if (result.success) {
           setAllIncomes((prev) =>
             prev.map((i) => (i.id === editId ? { ...i, ...form } : i)),
@@ -152,12 +130,7 @@ export default function IncomeClient() {
           showToast("수정 실패 ❌", "error");
         }
       } else {
-        const res = await fetch("/api/sheets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sheet: "income", action: "create", ...form }),
-        });
-        const result = await res.json();
+        const result = await SheetsAPI.income.create(form);
         if (result.success) {
           showToast("수입이 추가되었습니다 ✅", "success");
           await fetchIncomes();
@@ -174,12 +147,7 @@ export default function IncomeClient() {
   const handleDelete = async (id: string) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
-      const res = await fetch("/api/sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sheet: "income", action: "delete", id }),
-      });
-      const result = await res.json();
+      const result = await SheetsAPI.income.delete(id);
       if (result.success) {
         setAllIncomes((prev) => prev.filter((i) => i.id !== id));
         showToast("수입이 삭제되었습니다 🗑️", "success");

@@ -4,22 +4,14 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardBody } from "../components/Card";
 import Button from "../components/Button";
 import { formatAmount } from "../../lib/utils";
+import {
+  SheetsAPI,
+  type Expense,
+  type IncomeItem,
+  type SavingsItem,
+  type InvestmentTransaction,
+} from "../../lib/sheets-api";
 import styles from "./Summary.module.css";
-
-interface SheetItem {
-  id: string;
-  date: string;
-  category: string;
-  amount: string;
-}
-
-interface InvestmentItem {
-  id: string;
-  date: string;
-  type: string;
-  amount: string;
-  name: string;
-}
 
 type ViewType = "monthly" | "annual";
 type AnnualTab = "summary" | "networth";
@@ -37,37 +29,29 @@ export default function SummaryClient() {
 
   // Data
   const [loading, setLoading] = useState(true);
-  const [expenses, setExpenses] = useState<SheetItem[]>([]);
-  const [incomes, setIncomes] = useState<SheetItem[]>([]);
-  const [savings, setSavings] = useState<SheetItem[]>([]);
-  const [investments, setInvestments] = useState<InvestmentItem[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<IncomeItem[]>([]);
+  const [savings, setSavings] = useState<SavingsItem[]>([]);
+  const [investments, setInvestments] = useState<InvestmentTransaction[]>([]);
 
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [expRes, incRes, savRes, invRes] = await Promise.all([
-          fetch("/api/sheets?sheet=expenses&action=list"),
-          fetch("/api/sheets?sheet=income&action=list"),
-          fetch("/api/sheets?sheet=savings&action=list"),
-          fetch("/api/sheets?sheet=investments_transactions&action=list"),
-        ]);
         const [expData, incData, savData, invData] = await Promise.all([
-          expRes.json(),
-          incRes.json(),
-          savRes.json(),
-          invRes.json(),
+          SheetsAPI.expenses.list(),
+          SheetsAPI.income.list(),
+          SheetsAPI.savings.list(),
+          SheetsAPI.investments.list(),
         ]);
-        if (expData.success)
-          setExpenses((expData.data as SheetItem[]).filter((i) => i.id));
-        if (incData.success)
-          setIncomes((incData.data as SheetItem[]).filter((i) => i.id));
-        if (savData.success)
-          setSavings((savData.data as SheetItem[]).filter((i) => i.id));
-        if (invData.success)
-          setInvestments(
-            (invData.data as InvestmentItem[]).filter((i) => i.id),
-          );
+        if (expData.success && expData.data)
+          setExpenses(expData.data.filter((i) => i.id));
+        if (incData.success && incData.data)
+          setIncomes(incData.data.filter((i) => i.id));
+        if (savData.success && savData.data)
+          setSavings(savData.data.filter((i) => i.id));
+        if (invData.success && invData.data)
+          setInvestments(invData.data.filter((i) => i.id));
       } catch {
         // silently fail
       } finally {

@@ -9,17 +9,8 @@ import FormTextarea from "../components/FormTextarea";
 import Modal, { ModalClose } from "../components/Modal";
 import { useToast } from "../components/ToastProvider";
 import { formatDate, formatAmount, getTodayString } from "../../lib/utils";
+import { SheetsAPI, type SavingsItem } from "../../lib/sheets-api";
 import styles from "./Savings.module.css";
-
-interface SavingsItem {
-  id: string;
-  date: string;
-  category: string;
-  account: string;
-  amount: string;
-  memo: string;
-  createdAt: string;
-}
 
 export default function SavingsClient() {
   const { showToast } = useToast();
@@ -40,12 +31,9 @@ export default function SavingsClient() {
   const fetchSavings = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/sheets?sheet=savings&action=list");
-      const result = await res.json();
-      if (result.success) {
-        const data: SavingsItem[] = (result.data as SavingsItem[]).filter(
-          (i) => i.id,
-        );
+      const result = await SheetsAPI.savings.list();
+      if (result.success && result.data) {
+        const data = result.data.filter((i) => i.id);
         data.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );
@@ -119,18 +107,7 @@ export default function SavingsClient() {
       if (editId) {
         const item = allItems.find((i) => i.id === editId);
         if (!item) return;
-        const res = await fetch("/api/sheets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sheet: "savings",
-            action: "update",
-            ...item,
-            ...form,
-            id: editId,
-          }),
-        });
-        const result = await res.json();
+        const result = await SheetsAPI.savings.update(item, form);
         if (result.success) {
           setAllItems((prev) =>
             prev.map((i) => (i.id === editId ? { ...i, ...form } : i)),
@@ -140,12 +117,7 @@ export default function SavingsClient() {
           showToast("수정 실패 ❌", "error");
         }
       } else {
-        const res = await fetch("/api/sheets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sheet: "savings", action: "create", ...form }),
-        });
-        const result = await res.json();
+        const result = await SheetsAPI.savings.create(form);
         if (result.success) {
           showToast("저축이 기록되었습니다 ✅", "success");
           await fetchSavings();
@@ -162,12 +134,7 @@ export default function SavingsClient() {
   const handleDelete = async (id: string) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
-      const res = await fetch("/api/sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sheet: "savings", action: "delete", id }),
-      });
-      const result = await res.json();
+      const result = await SheetsAPI.savings.delete(id);
       if (result.success) {
         setAllItems((prev) => prev.filter((i) => i.id !== id));
         showToast("저축 내역이 삭제되었습니다 🗑️", "success");

@@ -10,16 +10,8 @@ import Modal, { ModalClose } from "../components/Modal";
 import { useToast } from "../components/ToastProvider";
 import { CONFIG } from "../../lib/config";
 import { formatAmount, getTodayString } from "../../lib/utils";
+import { SheetsAPI, type Expense } from "../../lib/sheets-api";
 import styles from "./Spending.module.css";
-
-interface Expense {
-  id: string;
-  date: string;
-  category: string;
-  memo: string;
-  amount: string;
-  createdAt: string;
-}
 
 export default function SpendingClient() {
   const { showToast } = useToast();
@@ -39,10 +31,9 @@ export default function SpendingClient() {
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/sheets?sheet=expenses&action=list");
-      const result = await res.json();
-      if (result.success) {
-        const data: Expense[] = (result.data as Expense[]).filter((e) => e.id);
+      const result = await SheetsAPI.expenses.list();
+      if (result.success && result.data) {
+        const data = result.data.filter((e) => e.id);
         data.sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );
@@ -105,12 +96,7 @@ export default function SpendingClient() {
   const handleDelete = async (id: string) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
-      const res = await fetch("/api/sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sheet: "expenses", action: "delete", id }),
-      });
-      const result = await res.json();
+      const result = await SheetsAPI.expenses.delete(id);
       if (result.success) {
         setExpenses((prev) => prev.filter((e) => e.id !== id));
         showToast("지출이 삭제되었습니다 🗑️", "success");
@@ -138,18 +124,7 @@ export default function SpendingClient() {
     const expense = expenses.find((ex) => ex.id === editId);
     if (!expense) return;
     try {
-      const res = await fetch("/api/sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sheet: "expenses",
-          action: "update",
-          ...expense,
-          ...editForm,
-          id: editId,
-        }),
-      });
-      const result = await res.json();
+      const result = await SheetsAPI.expenses.update(expense, editForm);
       if (result.success) {
         setExpenses((prev) =>
           prev.map((ex) => (ex.id === editId ? { ...ex, ...editForm } : ex)),
