@@ -39,13 +39,15 @@ export interface SavingsItem {
 export interface InvestmentTransaction {
   id: string;
   date: string;
-  type: string;
-  name: string;
-  investmentType: string;
+  assetId: string;
+  assetName: string;
+  type: string;        // "매수" | "매도"
+  quantity: string;
   amount: string;
-  currentPrice: string;
+  currency: string;    // "KRW" | "USD"
   memo: string;
   createdAt: string;
+  market: string;      // "KR" | "US"
 }
 
 // ─── Low-level helpers ────────────────────────────────────────────────────────

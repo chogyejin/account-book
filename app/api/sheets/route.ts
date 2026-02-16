@@ -152,13 +152,15 @@ export async function GET(request: NextRequest) {
         investments_transactions: [
           "id",
           "date",
+          "assetId",
+          "assetName",
           "type",
-          "name",
-          "investmentType",
+          "quantity",
           "amount",
-          "currentPrice",
+          "currency",
           "memo",
           "createdAt",
+          "market",
         ],
       };
 
@@ -238,13 +240,15 @@ export async function POST(request: NextRequest) {
           row = [
             generateId("INV"),
             data.date,
+            data.assetId,
+            data.assetName,
             data.type,
-            data.name,
-            data.investmentType,
+            data.quantity,
             data.amount,
-            data.currentPrice || "",
+            data.currency,
             data.memo || "",
             timestamp,
+            data.market || "KR",
           ];
           break;
 
@@ -311,13 +315,15 @@ export async function POST(request: NextRequest) {
           row = [
             id,
             data.date,
+            data.assetId,
+            data.assetName,
             data.type,
-            data.name,
-            data.investmentType,
+            data.quantity,
             data.amount,
-            data.currentPrice || "",
+            data.currency,
             data.memo || "",
             data.createdAt,
+            data.market || "KR",
           ];
           break;
 
