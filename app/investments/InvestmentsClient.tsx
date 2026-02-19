@@ -9,7 +9,7 @@ import FormSelect from "../components/FormSelect";
 import FormTextarea from "../components/FormTextarea";
 import Modal, { ModalClose } from "../components/Modal";
 import { useToast } from "../components/ToastProvider";
-import { formatDate, formatAmount, getTodayString } from "../../lib/utils";
+import { formatDate, formatAmount, formatCurrency, getTodayString } from "../../lib/utils";
 import { SheetsAPI, type InvestmentTransaction } from "../../lib/sheets-api";
 import {
   calculatePortfolio,
@@ -36,10 +36,50 @@ export default function InvestmentsClient() {
   const [exchangeRate, setExchangeRate] = useState(1300);
   const [currentPrices, setCurrentPrices] = useState<Record<string, number>>({});
 
+  const [pricesLoading, setPricesLoading] = useState(false);
+  const [errorAssets, setErrorAssets] = useState<Set<string>>(new Set());
+
+  const [txnFilter, setTxnFilter] = useState("전체");
   const [txnModalOpen, setTxnModalOpen] = useState(false);
   const [txnModalTitle, setTxnModalTitle] = useState("거래 기록");
   const [editTxnId, setEditTxnId] = useState("");
   const [txnForm, setTxnForm] = useState(emptyTxnForm);
+
+  const fetchExchangeRate = useCallback(async () => {
+    try {
+      const res = await fetch("/api/market/exchange-rate");
+      const data = await res.json();
+      if (data.success && data.rate) setExchangeRate(Math.round(data.rate));
+    } catch {
+      // 실패 시 기본값 유지
+    }
+  }, []);
+
+  const fetchAllPrices = useCallback(async (txns: InvestmentTransaction[]) => {
+    const uniqueAssets = [
+      ...new Map(
+        txns.map((t) => [t.assetId, { assetId: String(t.assetId), market: t.market }]),
+      ).values(),
+    ];
+    if (uniqueAssets.length === 0) return;
+    setPricesLoading(true);
+    try {
+      const res = await fetch("/api/market/prices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(uniqueAssets),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.prices) setCurrentPrices(data.prices);
+        if (data.errors) setErrorAssets(new Set<string>(data.errors));
+      }
+    } catch {
+      // 무시
+    } finally {
+      setPricesLoading(false);
+    }
+  }, []);
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
@@ -51,21 +91,31 @@ export default function InvestmentsClient() {
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );
         setTransactions(data);
+        fetchAllPrices(data);
       }
     } catch {
       showToast("데이터를 불러오지 못했습니다 ❌", "error");
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, fetchAllPrices]);
 
   useEffect(() => {
     fetchTransactions();
-  }, [fetchTransactions]);
+    fetchExchangeRate();
+  }, [fetchTransactions, fetchExchangeRate]);
 
   const portfolio = useMemo(
     () => calculatePortfolio(transactions, currentPrices, exchangeRate),
     [transactions, currentPrices, exchangeRate],
+  );
+
+  const filteredTransactions = useMemo(
+    () =>
+      txnFilter === "전체"
+        ? transactions
+        : transactions.filter((t) => t.type === txnFilter),
+    [transactions, txnFilter],
   );
 
   const openAddTransaction = () => {
@@ -94,6 +144,11 @@ export default function InvestmentsClient() {
 
   const handleTxnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const isCash = txnForm.type === "입금" || txnForm.type === "출금";
+    if (!isCash && (!txnForm.assetId.trim() || !txnForm.assetName.trim())) {
+      showToast("종목 ID와 종목명을 모두 입력해주세요 ⚠️", "warning");
+      return;
+    }
     try {
       if (editTxnId) {
         const txn = transactions.find((t) => t.id === editTxnId);
@@ -137,14 +192,6 @@ export default function InvestmentsClient() {
     }
   };
 
-  const handleCurrentPriceChange = (assetId: string, value: string) => {
-    const parsed = parseFloat(value);
-    setCurrentPrices((prev) => ({
-      ...prev,
-      [assetId]: isNaN(parsed) ? 0 : parsed,
-    }));
-  };
-
   const profitClass = (value: number) =>
     value >= 0 ? styles.profitPositive : styles.profitNegative;
 
@@ -154,29 +201,40 @@ export default function InvestmentsClient() {
   return (
     <>
       {/* Stats Grid */}
-      <div className="stats-grid">
+      <div className="stats-grid" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
         <div className="stat-card">
           <div className="stat-value">
-            {portfolio.totalValueKRW > 0 ? formatAmount(portfolio.totalValueKRW) : "-"}
+            {portfolio.totalPortfolioKRW > 0 ? formatAmount(portfolio.totalPortfolioKRW) : "-"}
           </div>
-          <div className="stat-label">총 평가금액</div>
+          <div className="stat-label">총 포트폴리오</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">
+            {formatAmount(portfolio.cashKRW)}
+          </div>
+          <div className="stat-label">현금 잔고</div>
         </div>
         <div className="stat-card">
           <div
-            className={clsx("stat-value", portfolio.totalValueKRW > 0 ? profitClass(portfolio.totalProfit) : "")}
+            className={clsx("stat-value", portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfit) : "")}
           >
-            {portfolio.totalValueKRW > 0 ? formatAmount(portfolio.totalProfit) : "-"}
+            {portfolio.totalInvestedKRW > 0 ? formatAmount(portfolio.totalProfit) : "-"}
           </div>
+          {portfolio.totalInvestedKRW > 0 && (
+            <div style={{ fontSize: "0.7rem", color: "var(--gray-light)", textAlign: "center", marginTop: 2 }}>
+              실현 {formatAmount(portfolio.realizedProfit)} / 미실현 {formatAmount(portfolio.unrealizedProfit)}
+            </div>
+          )}
           <div className="stat-label">총 수익</div>
         </div>
         <div className="stat-card">
           <div
             className={clsx(
               "stat-value",
-              portfolio.totalValueKRW > 0 ? profitClass(portfolio.totalProfitRate) : "",
+              portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfitRate) : "",
             )}
           >
-            {portfolio.totalValueKRW > 0 ? formatProfitRate(portfolio.totalProfitRate) : "-"}
+            {portfolio.totalInvestedKRW > 0 ? formatProfitRate(portfolio.totalProfitRate) : "-"}
           </div>
           <div className="stat-label">수익률</div>
         </div>
@@ -200,42 +258,38 @@ export default function InvestmentsClient() {
         <Card className="mb-6">
           <CardHeader title="통화별 비중" icon="💱" />
           <CardBody>
-            <div className={styles.currencyRatioContainer}>
-              <div className={styles.currencyItem}>
-                <div className={styles.currencyLabel}>
-                  <span>🇰🇷 KRW</span>
-                  <span>
-                    {portfolio.currencyRatio.KRW.percentage.toFixed(1)}%
-                  </span>
+            <div className={styles.stackedBar}>
+              <div
+                className={styles.stackedBarKRW}
+                style={{ width: `${portfolio.currencyRatio.KRW.percentage}%` }}
+              />
+              <div
+                className={styles.stackedBarUSD}
+                style={{ width: `${portfolio.currencyRatio.USD.percentage}%` }}
+              />
+            </div>
+            <div className={styles.stackedLegend}>
+              <div className={styles.stackedLegendItem}>
+                <div className={styles.stackedLegendLabel}>
+                  <span className={styles.stackedLegendDot} style={{ background: "#22c55e" }} />
+                  🇰🇷 KRW
                 </div>
-                <div className={styles.currencyBar}>
-                  <div
-                    className={styles.currencyBarFillKRW}
-                    style={{
-                      width: `${portfolio.currencyRatio.KRW.percentage}%`,
-                    }}
-                  />
+                <div className={styles.stackedLegendPercent}>
+                  {portfolio.currencyRatio.KRW.percentage.toFixed(1)}%
                 </div>
-                <div className={styles.currencyAmount}>
+                <div className={styles.stackedLegendAmount}>
                   {formatAmount(portfolio.currencyRatio.KRW.amount)}
                 </div>
               </div>
-              <div className={styles.currencyItem}>
-                <div className={styles.currencyLabel}>
-                  <span>🇺🇸 USD</span>
-                  <span>
-                    {portfolio.currencyRatio.USD.percentage.toFixed(1)}%
-                  </span>
+              <div className={styles.stackedLegendItem} style={{ alignItems: "flex-end" }}>
+                <div className={styles.stackedLegendLabel}>
+                  🇺🇸 USD
+                  <span className={styles.stackedLegendDot} style={{ background: "#3b82f6" }} />
                 </div>
-                <div className={styles.currencyBar}>
-                  <div
-                    className={styles.currencyBarFillUSD}
-                    style={{
-                      width: `${portfolio.currencyRatio.USD.percentage}%`,
-                    }}
-                  />
+                <div className={styles.stackedLegendPercent}>
+                  {portfolio.currencyRatio.USD.percentage.toFixed(1)}%
                 </div>
-                <div className={styles.currencyAmount}>
+                <div className={styles.stackedLegendAmount}>
                   {formatAmount(portfolio.currencyRatio.USD.amount)}
                 </div>
               </div>
@@ -247,7 +301,16 @@ export default function InvestmentsClient() {
       {/* Holdings Table */}
       {portfolio.holdings.length > 0 && (
         <Card className="mb-6">
-          <CardHeader title="보유 종목" icon="💼" />
+          <CardHeader title="보유 종목" icon="💼">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => { fetchExchangeRate(); fetchAllPrices(transactions); }}
+              disabled={pricesLoading}
+            >
+              {pricesLoading ? "조회 중..." : "🔄 시세 갱신"}
+            </Button>
+          </CardHeader>
           <CardBody>
             <div style={{ overflowX: "auto" }}>
               <table className="w-full border-collapse">
@@ -284,10 +347,10 @@ export default function InvestmentsClient() {
                     >
                       <td className="py-3 px-4">
                         <div className="font-medium text-sm">
-                          {holding.assetName}
+                          {holding.assetName || <span className="text-gray-400">이름 없음</span>}
                         </div>
                         <div className="text-xs text-gray-400">
-                          {holding.assetId}
+                          {holding.assetId || <span className="text-red-400">ID 없음</span>}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center">
@@ -312,21 +375,23 @@ export default function InvestmentsClient() {
                           maximumFractionDigits: 2,
                         })}
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        <input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          placeholder="현재가 입력"
-                          value={currentPrices[holding.assetId] ?? ""}
-                          onChange={(e) =>
-                            handleCurrentPriceChange(
-                              holding.assetId,
-                              e.target.value,
-                            )
-                          }
-                          className={styles.holdingInput}
-                        />
+                      <td className="py-3 px-4 text-right text-sm">
+                        {currentPrices[holding.assetId] != null
+                          ? currentPrices[holding.assetId].toLocaleString("ko-KR", {
+                              maximumFractionDigits: 2,
+                            })
+                          : pricesLoading
+                            ? <span className="text-gray-400 text-xs">조회 중...</span>
+                            : errorAssets.has(holding.assetId)
+                              ? (
+                                <span
+                                  className="text-xs text-orange-500 font-medium"
+                                  title="구글 시트 _prices 탭의 수식을 확인해주세요"
+                                >
+                                  ⚠️ 수식 오류
+                                </span>
+                              )
+                              : <span className="text-gray-400">-</span>}
                       </td>
                       <td className="py-3 px-4 text-right text-sm font-semibold text-pink-600">
                         {holding.currentPrice > 0
@@ -357,6 +422,27 @@ export default function InvestmentsClient() {
       {/* Transactions Table */}
       <Card className="mb-6">
         <CardHeader title="거래 내역" icon="📋">
+          <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+            {["전체", "매수", "매도", "입금", "출금"].map((f) => (
+              <button
+                key={f}
+                onClick={() => setTxnFilter(f)}
+                style={{
+                  padding: "3px 10px",
+                  borderRadius: "999px",
+                  fontSize: "0.78rem",
+                  fontWeight: txnFilter === f ? 600 : 400,
+                  border: `1.5px solid ${txnFilter === f ? "var(--primary)" : "var(--border)"}`,
+                  background: txnFilter === f ? "var(--primary)" : "transparent",
+                  color: txnFilter === f ? "#fff" : "var(--gray)",
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
           <Button variant="primary" size="sm" onClick={openAddTransaction}>
             ➕ 거래 기록
           </Button>
@@ -407,7 +493,7 @@ export default function InvestmentsClient() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.length === 0 ? (
+                  {filteredTransactions.length === 0 ? (
                     <tr>
                       <td
                         colSpan={9}
@@ -417,11 +503,11 @@ export default function InvestmentsClient() {
                           color: "var(--gray-light)",
                         }}
                       >
-                        거래 내역이 없습니다 📭
+                        {txnFilter === "전체" ? "거래 내역이 없습니다 📭" : `${txnFilter} 내역이 없습니다 📭`}
                       </td>
                     </tr>
                   ) : (
-                    transactions.map((t) => (
+                    filteredTransactions.map((t) => (
                       <tr
                         key={t.id}
                         className="border-b border-gray-100 hover:bg-gray-50"
@@ -431,9 +517,11 @@ export default function InvestmentsClient() {
                         </td>
                         <td className="py-3 px-4">
                           <div className="font-medium text-sm">
-                            {t.assetName}
+                            {t.assetName || <span className="text-gray-400">이름 없음</span>}
                           </div>
-                          <div className="text-xs text-gray-400">{t.assetId}</div>
+                          <div className="text-xs text-gray-400">
+                            {t.assetId || <span className="text-red-400">ID 없음</span>}
+                          </div>
                         </td>
                         <td className="py-3 px-4 text-center">
                           <span
@@ -453,7 +541,7 @@ export default function InvestmentsClient() {
                           })}
                         </td>
                         <td className="py-3 px-4 text-right text-sm font-semibold text-pink-600">
-                          {formatAmount(Number(t.amount))}
+                          {formatCurrency(t.amount, t.currency || "KRW")}
                         </td>
                         <td className="py-3 px-4 text-center">
                           <span
@@ -517,107 +605,113 @@ export default function InvestmentsClient() {
           </CardHeader>
           <CardBody>
             <form onSubmit={handleTxnSubmit}>
-              <div className="grid grid-cols-2 gap-4">
-                <FormInput
-                  label="📅 날짜"
-                  type="date"
-                  value={txnForm.date}
-                  onChange={(e) =>
-                    setTxnForm({ ...txnForm, date: e.target.value })
-                  }
-                  required
-                />
-                <FormSelect
-                  label="📊 거래유형"
-                  value={txnForm.type}
-                  onChange={(e) =>
-                    setTxnForm({ ...txnForm, type: e.target.value })
-                  }
-                  required
-                >
-                  <option value="">선택하세요</option>
-                  <option value="매수">매수</option>
-                  <option value="매도">매도</option>
-                </FormSelect>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FormInput
-                  label="🔑 종목 ID"
-                  type="text"
-                  placeholder="예: AAPL, 005930"
-                  value={txnForm.assetId}
-                  onChange={(e) =>
-                    setTxnForm({ ...txnForm, assetId: e.target.value })
-                  }
-                  required
-                />
-                <FormInput
-                  label="🏷️ 종목명"
-                  type="text"
-                  placeholder="예: 애플, 삼성전자"
-                  value={txnForm.assetName}
-                  onChange={(e) =>
-                    setTxnForm({ ...txnForm, assetName: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <FormInput
-                  label="📦 수량"
-                  type="number"
-                  placeholder="10"
-                  min="0"
-                  step="0.0001"
-                  value={txnForm.quantity}
-                  onChange={(e) =>
-                    setTxnForm({ ...txnForm, quantity: e.target.value })
-                  }
-                  required
-                />
-                <FormSelect
-                  label="💱 통화"
-                  value={txnForm.currency}
-                  onChange={(e) =>
-                    setTxnForm({ ...txnForm, currency: e.target.value })
-                  }
-                  required
-                >
-                  <option value="KRW">KRW (원)</option>
-                  <option value="USD">USD (달러)</option>
-                </FormSelect>
-                <FormSelect
-                  label="🌍 시장"
-                  value={txnForm.market}
-                  onChange={(e) =>
-                    setTxnForm({ ...txnForm, market: e.target.value })
-                  }
-                  required
-                >
-                  <option value="KR">🇰🇷 한국</option>
-                  <option value="US">🇺🇸 미국</option>
-                </FormSelect>
-              </div>
-              <FormInput
-                label="💵 거래금액"
-                type="number"
-                placeholder="1000000"
-                min="0"
-                step="0.01"
-                value={txnForm.amount}
-                onChange={(e) =>
-                  setTxnForm({ ...txnForm, amount: e.target.value })
-                }
-                required
-              />
-              <FormTextarea
-                label="📝 메모"
-                placeholder="거래 메모"
-                value={txnForm.memo}
-                onChange={(e) =>
-                  setTxnForm({ ...txnForm, memo: e.target.value })
-                }
-              />
+              {(() => {
+                const isCash = txnForm.type === "입금" || txnForm.type === "출금";
+                return (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormInput
+                        label="📅 날짜"
+                        type="date"
+                        value={txnForm.date}
+                        onChange={(e) => setTxnForm({ ...txnForm, date: e.target.value })}
+                        required
+                      />
+                      <FormSelect
+                        label="📊 거래유형"
+                        value={txnForm.type}
+                        onChange={(e) => setTxnForm({ ...txnForm, type: e.target.value })}
+                        required
+                      >
+                        <option value="">선택하세요</option>
+                        <option value="매수">매수</option>
+                        <option value="매도">매도</option>
+                        <option value="입금">💵 입금</option>
+                        <option value="출금">💸 출금</option>
+                      </FormSelect>
+                    </div>
+                    {!isCash && (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormInput
+                            label="🔑 종목 ID"
+                            type="text"
+                            placeholder="예: AAPL, 005930"
+                            value={txnForm.assetId}
+                            onChange={(e) => setTxnForm({ ...txnForm, assetId: e.target.value })}
+                            required
+                          />
+                          <FormInput
+                            label="🏷️ 종목명"
+                            type="text"
+                            placeholder="예: 애플, 삼성전자"
+                            value={txnForm.assetName}
+                            onChange={(e) => setTxnForm({ ...txnForm, assetName: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          <FormInput
+                            label="📦 수량"
+                            type="number"
+                            placeholder="10"
+                            min="0"
+                            step="0.0001"
+                            value={txnForm.quantity}
+                            onChange={(e) => setTxnForm({ ...txnForm, quantity: e.target.value })}
+                            required
+                          />
+                          <FormSelect
+                            label="💱 통화"
+                            value={txnForm.currency}
+                            onChange={(e) => setTxnForm({ ...txnForm, currency: e.target.value })}
+                            required
+                          >
+                            <option value="KRW">KRW (원)</option>
+                            <option value="USD">USD (달러)</option>
+                          </FormSelect>
+                          <FormSelect
+                            label="🌍 시장"
+                            value={txnForm.market}
+                            onChange={(e) => setTxnForm({ ...txnForm, market: e.target.value })}
+                            required
+                          >
+                            <option value="KR">🇰🇷 한국</option>
+                            <option value="US">🇺🇸 미국</option>
+                          </FormSelect>
+                        </div>
+                      </>
+                    )}
+                    {isCash && (
+                      <FormSelect
+                        label="💱 통화"
+                        value={txnForm.currency}
+                        onChange={(e) => setTxnForm({ ...txnForm, currency: e.target.value })}
+                        required
+                      >
+                        <option value="KRW">KRW (원)</option>
+                        <option value="USD">USD (달러)</option>
+                      </FormSelect>
+                    )}
+                    <FormInput
+                      label="💵 금액"
+                      type="number"
+                      placeholder="1000000"
+                      min="0"
+                      step="0.01"
+                      value={txnForm.amount}
+                      onChange={(e) => setTxnForm({ ...txnForm, amount: e.target.value })}
+                      required
+                    />
+                    <FormTextarea
+                      label="📝 메모"
+                      placeholder="거래 메모"
+                      value={txnForm.memo}
+                      onChange={(e) => setTxnForm({ ...txnForm, memo: e.target.value })}
+                    />
+                  </>
+                );
+              })()}
               <div className="flex gap-2">
                 <Button type="submit" variant="primary" block>
                   💾 저장하기

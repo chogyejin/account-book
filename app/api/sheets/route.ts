@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
           row = [
             generateId("INV"),
             data.date,
-            data.assetId,
+            "'" + String(data.assetId),
             data.assetName,
             data.type,
             data.quantity,
@@ -315,7 +315,7 @@ export async function POST(request: NextRequest) {
           row = [
             id,
             data.date,
-            data.assetId,
+            "'" + String(data.assetId),
             data.assetName,
             data.type,
             data.quantity,

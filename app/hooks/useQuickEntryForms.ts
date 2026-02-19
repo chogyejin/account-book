@@ -1,5 +1,6 @@
 import { useState } from "react";
 import API from "../../lib/api";
+import { SheetsAPI } from "../../lib/sheets-api";
 import { getTodayString } from "../../lib/utils";
 
 interface ToastFunction {
@@ -28,9 +29,12 @@ interface SavingsFormData {
 interface InvestmentFormData {
   date: string;
   type: string;
-  name: string;
+  assetId: string;
+  assetName: string;
+  quantity: string;
   amount: string;
-  currentPrice: string;
+  currency: string;
+  market: string;
   memo: string;
 }
 
@@ -158,32 +162,27 @@ export function useInvestmentForm(showToast: ToastFunction) {
   const [form, setForm] = useState<InvestmentFormData>({
     date: today,
     type: "",
-    name: "",
+    assetId: "",
+    assetName: "",
+    quantity: "",
     amount: "",
-    currentPrice: "",
+    currency: "KRW",
+    market: "KR",
     memo: "",
   });
-  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!category) {
-      showToast("Invest 종류를 선택해주세요 ⚠️", "warning");
+    const isCashType = form.type === "입금" || form.type === "출금";
+    if (!isCashType && (!form.assetId.trim() || !form.assetName.trim())) {
+      showToast("종목 ID와 종목명을 모두 입력해주세요 ⚠️", "warning");
       return;
     }
 
     try {
       setLoading(true);
-      const res = await API.createInvestment({
-        date: form.date,
-        type: form.type,
-        name: form.name,
-        investmentType: category,
-        amount: form.amount,
-        currentPrice: form.currentPrice,
-        memo: form.memo,
-      });
+      const res = await SheetsAPI.investments.create(form);
       setLoading(false);
 
       if (res.success) {
@@ -191,12 +190,14 @@ export function useInvestmentForm(showToast: ToastFunction) {
         setForm({
           date: today,
           type: "",
-          name: "",
+          assetId: "",
+          assetName: "",
+          quantity: "",
           amount: "",
-          currentPrice: "",
+          currency: "KRW",
+          market: "KR",
           memo: "",
         });
-        setCategory("");
       } else {
         showToast("저장에 실패했습니다 ❌", "error");
       }
@@ -206,5 +207,5 @@ export function useInvestmentForm(showToast: ToastFunction) {
     }
   };
 
-  return { form, setForm, category, setCategory, loading, handleSubmit };
+  return { form, setForm, loading, handleSubmit };
 }

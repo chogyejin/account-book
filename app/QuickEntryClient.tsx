@@ -222,86 +222,118 @@ export default function QuickEntryClient() {
                 label="📅 날짜"
                 value={investment.form.date}
                 onChange={(e) =>
-                  investment.setForm({
-                    ...investment.form,
-                    date: e.target.value,
-                  })
+                  investment.setForm({ ...investment.form, date: e.target.value })
                 }
                 required
               />
               <FormSelect
-                label="📊 거래 유형"
+                label="📊 거래유형"
                 value={investment.form.type}
                 onChange={(e) =>
-                  investment.setForm({
-                    ...investment.form,
-                    type: e.target.value,
-                  })
+                  investment.setForm({ ...investment.form, type: e.target.value })
                 }
                 required
               >
                 <option value="">선택하세요</option>
                 <option value="매수">매수</option>
                 <option value="매도">매도</option>
+                <option value="입금">💵 입금</option>
+                <option value="출금">💸 출금</option>
               </FormSelect>
             </div>
-            <div className="grid grid-2">
-              <FormInput
-                type="text"
-                label="🏢 종목명"
-                placeholder="삼성전자"
-                value={investment.form.name}
+            {investment.form.type !== "입금" && investment.form.type !== "출금" && (
+              <>
+                <div className="grid grid-2">
+                  <FormInput
+                    type="text"
+                    label="🔑 종목 ID"
+                    placeholder="예: AAPL, 005930"
+                    value={investment.form.assetId}
+                    onChange={(e) =>
+                      investment.setForm({ ...investment.form, assetId: e.target.value })
+                    }
+                    required
+                  />
+                  <FormInput
+                    type="text"
+                    label="🏷️ 종목명"
+                    placeholder="예: 애플, 삼성전자"
+                    value={investment.form.assetName}
+                    onChange={(e) =>
+                      investment.setForm({ ...investment.form, assetName: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="grid grid-2" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+                  <FormInput
+                    type="number"
+                    label="📦 수량"
+                    placeholder="10"
+                    min="0"
+                    step="0.0001"
+                    value={investment.form.quantity}
+                    onChange={(e) =>
+                      investment.setForm({ ...investment.form, quantity: e.target.value })
+                    }
+                    required
+                  />
+                  <FormSelect
+                    label="💱 통화"
+                    value={investment.form.currency}
+                    onChange={(e) =>
+                      investment.setForm({ ...investment.form, currency: e.target.value })
+                    }
+                    required
+                  >
+                    <option value="KRW">KRW (원)</option>
+                    <option value="USD">USD (달러)</option>
+                  </FormSelect>
+                  <FormSelect
+                    label="🌍 시장"
+                    value={investment.form.market}
+                    onChange={(e) =>
+                      investment.setForm({ ...investment.form, market: e.target.value })
+                    }
+                    required
+                  >
+                    <option value="KR">🇰🇷 한국</option>
+                    <option value="US">🇺🇸 미국</option>
+                  </FormSelect>
+                </div>
+              </>
+            )}
+            {(investment.form.type === "입금" || investment.form.type === "출금") && (
+              <FormSelect
+                label="💱 통화"
+                value={investment.form.currency}
                 onChange={(e) =>
-                  investment.setForm({
-                    ...investment.form,
-                    name: e.target.value,
-                  })
+                  investment.setForm({ ...investment.form, currency: e.target.value })
                 }
-              />
-              <FormInput
-                type="number"
-                label="💰 금액"
-                placeholder="1000000"
-                min="0"
-                value={investment.form.amount}
-                onChange={(e) =>
-                  investment.setForm({
-                    ...investment.form,
-                    amount: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">🏷️ Invest 종류</label>
-              <CategoryTag
-                categories={CONFIG.DEFAULT_CATEGORIES.investment}
-                selectedCategory={investment.category}
-                onSelectCategory={investment.setCategory}
-              />
-            </div>
+                required
+              >
+                <option value="KRW">KRW (원)</option>
+                <option value="USD">USD (달러)</option>
+              </FormSelect>
+            )}
             <FormInput
               type="number"
-              label="💹 현재가 (선택)"
-              placeholder="75000"
+              label="💵 거래금액"
+              placeholder="1000000"
               min="0"
-              value={investment.form.currentPrice}
+              step="0.01"
+              value={investment.form.amount}
               onChange={(e) =>
-                investment.setForm({
-                  ...investment.form,
-                  currentPrice: e.target.value,
-                })
+                investment.setForm({ ...investment.form, amount: e.target.value })
               }
+              required
             />
             <FormTextarea
               label="📝 메모"
-              placeholder="Invest 이유나 전략을 적어보세요"
+              placeholder="거래 메모"
               value={investment.form.memo}
               onChange={(e) =>
-                investment.setForm({
-                  ...investment.form,
-                  memo: e.target.value,
-                })
+                investment.setForm({ ...investment.form, memo: e.target.value })
               }
             />
             <Button type="submit" variant="primary" block>
