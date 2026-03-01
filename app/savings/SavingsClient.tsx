@@ -334,9 +334,7 @@ export default function SavingsClient() {
               <FormSelect
                 label="📊 카테고리"
                 value={form.category}
-                onChange={(e) =>
-                  setForm({ ...form, category: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
                 required
               >
                 <option value="">선택하세요</option>
@@ -351,9 +349,7 @@ export default function SavingsClient() {
                 label="🏦 계좌명 (선택)"
                 placeholder="예: 청년적금, 비상금통장"
                 value={form.account}
-                onChange={(e) =>
-                  setForm({ ...form, account: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, account: e.target.value })}
               />
             </div>
             <FormTextarea
