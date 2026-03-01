@@ -11,6 +11,8 @@ import { useToast } from "../components/ToastProvider";
 import { formatDate, formatAmount, getTodayString } from "../../lib/utils";
 import { SheetsAPI, type SavingsItem } from "../../lib/sheets-api";
 import styles from "./Savings.module.css";
+import statStyles from "@/app/components/StatCard.module.css";
+import catStyles from "@/app/components/CategoryTag.module.css";
 
 export default function SavingsClient() {
   const { showToast } = useToast();
@@ -148,22 +150,22 @@ export default function SavingsClient() {
 
   return (
     <>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{formatAmount(totalSavings)}</div>
-          <div className="stat-label">총 저축액</div>
+      <div className={statStyles.statsGrid}>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{formatAmount(totalSavings)}</div>
+          <div className={statStyles.statLabel}>총 저축액</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{uniqueAccounts.length}개</div>
-          <div className="stat-label">저축 계좌 수</div>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{uniqueAccounts.length}개</div>
+          <div className={statStyles.statLabel}>저축 계좌 수</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{allItems.length}건</div>
-          <div className="stat-label">총 저축 횟수</div>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{allItems.length}건</div>
+          <div className={statStyles.statLabel}>총 저축 횟수</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{formatAmount(monthlyTotal)}</div>
-          <div className="stat-label">이번 달 저축</div>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{formatAmount(monthlyTotal)}</div>
+          <div className={statStyles.statLabel}>이번 달 저축</div>
         </div>
       </div>
 
@@ -273,7 +275,7 @@ export default function SavingsClient() {
                     >
                       <td className="p-3 text-gray">{formatDate(item.date)}</td>
                       <td className="p-3">
-                        <span className="category-tag">{item.category}</span>
+                        <span className={catStyles.categoryTag}>{item.category}</span>
                       </td>
                       <td className="p-3 text-gray">{item.account || "-"}</td>
                       <td className="p-3 text-medium-pink font-semibold">
@@ -311,7 +313,7 @@ export default function SavingsClient() {
             <ModalClose onClick={() => setModalOpen(false)} />
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
                 type="date"
                 label="📅 날짜"
@@ -330,7 +332,7 @@ export default function SavingsClient() {
                 required
               />
             </div>
-            <div className="grid grid-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormSelect
                 label="📊 카테고리"
                 value={form.category}

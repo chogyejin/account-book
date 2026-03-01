@@ -11,7 +11,10 @@ import { useToast } from "../components/ToastProvider";
 import { CONFIG } from "../../lib/config";
 import { formatAmount, getTodayString } from "../../lib/utils";
 import { SheetsAPI, type Expense } from "../../lib/sheets-api";
+import clsx from "clsx";
 import styles from "./Spending.module.css";
+import statStyles from "@/app/components/StatCard.module.css";
+import catStyles from "@/app/components/CategoryTag.module.css";
 
 export default function SpendingClient() {
   const { showToast } = useToast();
@@ -140,28 +143,28 @@ export default function SpendingClient() {
 
   return (
     <>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{formatAmount(totalThisMonth)}</div>
-          <div className="stat-label">이번 달 총 지출</div>
+      <div className={statStyles.statsGrid}>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{formatAmount(totalThisMonth)}</div>
+          <div className={statStyles.statLabel}>이번 달 총 지출</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{formatAmount(dailyAvg)}</div>
-          <div className="stat-label">일 평균 지출</div>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{formatAmount(dailyAvg)}</div>
+          <div className={statStyles.statLabel}>일 평균 지출</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{topCategory}</div>
-          <div className="stat-label">최다 지출 카테고리</div>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{topCategory}</div>
+          <div className={statStyles.statLabel}>최다 지출 카테고리</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{thisMonthExpenses.length}건</div>
-          <div className="stat-label">이번 달 지출 횟수</div>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{thisMonthExpenses.length}건</div>
+          <div className={statStyles.statLabel}>이번 달 지출 횟수</div>
         </div>
       </div>
 
       <Card>
         <CardHeader title="필터 & 검색" icon="🔍" />
-        <div className="grid grid-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormSelect
             label="카테고리"
             value={categoryFilter}
@@ -191,7 +194,7 @@ export default function SpendingClient() {
             {categoryBreakdown.map((cat) => (
               <div key={cat.name} className={styles.categoryItem}>
                 <div className={styles.categoryItemHeader}>
-                  <span className="category-tag selected">{cat.name}</span>
+                  <span className={clsx(catStyles.categoryTag, catStyles.selected)}>{cat.name}</span>
                   <span className="text-medium-pink font-semibold">
                     {cat.amount.toLocaleString("ko-KR")}원
                   </span>
@@ -258,7 +261,7 @@ export default function SpendingClient() {
                     >
                       <td className="p-3 text-gray">{exp.date}</td>
                       <td className="p-3">
-                        <span className="category-tag">{exp.category}</span>
+                        <span className={catStyles.categoryTag}>{exp.category}</span>
                       </td>
                       <td className="p-3 text-gray">{exp.memo || "-"}</td>
                       <td className="p-3 text-medium-pink font-semibold">
@@ -295,7 +298,7 @@ export default function SpendingClient() {
             <ModalClose onClick={() => setEditModalOpen(false)} />
           </CardHeader>
           <form onSubmit={handleEditSubmit}>
-            <div className="grid grid-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
                 type="date"
                 label="📅 날짜"

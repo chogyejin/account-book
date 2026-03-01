@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import clsx from "clsx";
 import { Card, CardHeader, CardBody } from "../components/Card";
 import Button from "../components/Button";
 import { formatAmount } from "../../lib/utils";
@@ -12,6 +13,8 @@ import {
   type InvestmentTransaction,
 } from "../../lib/sheets-api";
 import styles from "./Summary.module.css";
+import statStyles from "@/app/components/StatCard.module.css";
+import catStyles from "@/app/components/CategoryTag.module.css";
 
 type ViewType = "monthly" | "annual";
 type AnnualTab = "summary" | "networth";
@@ -353,7 +356,7 @@ export default function SummaryClient() {
       ) : viewType === "monthly" ? (
         // ── Monthly view ──────────────────────────────────────────────────
         <>
-          <div className="grid grid-2" style={{ marginTop: "24px" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginTop: "24px" }}>
             <div>
               <Card className="envelope">
                 <CardHeader title="이번 달 요약" icon="💰" />
@@ -403,14 +406,14 @@ export default function SummaryClient() {
                   </div>
                 </div>
               </Card>
-              <div className="stats-grid" style={{ marginTop: "16px" }}>
-                <div className="stat-card">
-                  <div className="stat-value">{mExpenseRate}%</div>
-                  <div className="stat-label">지출률</div>
+              <div className={statStyles.statsGrid} style={{ marginTop: "16px" }}>
+                <div className={statStyles.statCard}>
+                  <div className={statStyles.statValue}>{mExpenseRate}%</div>
+                  <div className={statStyles.statLabel}>지출률</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value">{monthExpenses.length}건</div>
-                  <div className="stat-label">지출 횟수</div>
+                <div className={statStyles.statCard}>
+                  <div className={statStyles.statValue}>{monthExpenses.length}건</div>
+                  <div className={statStyles.statLabel}>지출 횟수</div>
                 </div>
               </div>
             </div>
@@ -435,7 +438,7 @@ export default function SummaryClient() {
                           }}
                         >
                           <div className="category-item-header">
-                            <span className="category-tag selected">
+                            <span className={clsx(catStyles.categoryTag, catStyles.selected)}>
                               {cat.name}
                             </span>
                             <span className="text-pink font-bold">
@@ -559,28 +562,28 @@ export default function SummaryClient() {
 
           {annualTab === "summary" ? (
             <>
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-value">{formatAmount(aTotalIncome)}</div>
-                  <div className="stat-label">연간 총 수입</div>
+              <div className={statStyles.statsGrid}>
+                <div className={statStyles.statCard}>
+                  <div className={statStyles.statValue}>{formatAmount(aTotalIncome)}</div>
+                  <div className={statStyles.statLabel}>연간 총 수입</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value">
+                <div className={statStyles.statCard}>
+                  <div className={statStyles.statValue}>
                     {formatAmount(aTotalExpense)}
                   </div>
-                  <div className="stat-label">연간 총 지출</div>
+                  <div className={statStyles.statLabel}>연간 총 지출</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value">
+                <div className={statStyles.statCard}>
+                  <div className={statStyles.statValue}>
                     {formatAmount(aTotalSavings)}
                   </div>
-                  <div className="stat-label">연간 저축</div>
+                  <div className={statStyles.statLabel}>연간 저축</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value">
+                <div className={statStyles.statCard}>
+                  <div className={statStyles.statValue}>
                     {formatAmount(aTotalInvestments)}
                   </div>
-                  <div className="stat-label">연간 투자</div>
+                  <div className={statStyles.statLabel}>연간 투자</div>
                 </div>
               </div>
 
@@ -659,7 +662,7 @@ export default function SummaryClient() {
                 </CardBody>
               </Card>
 
-              <div className="grid grid-2 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <Card>
                   <CardHeader title="지출 카테고리 TOP 5" icon="💸" />
                   <CardBody>
@@ -670,7 +673,7 @@ export default function SummaryClient() {
                     ) : (
                       topExpenseCategories.map(({ category, amount }) => (
                         <div key={category} className={styles.categoryRow}>
-                          <span className="category-tag">{category}</span>
+                          <span className={catStyles.categoryTag}>{category}</span>
                           <span className={styles.categoryAmount}>
                             {formatAmount(amount)}
                           </span>
@@ -704,7 +707,7 @@ export default function SummaryClient() {
                     ) : (
                       incomeCategories.map(({ category, amount }) => (
                         <div key={category} className={styles.categoryRow}>
-                          <span className="category-tag">{category}</span>
+                          <span className={catStyles.categoryTag}>{category}</span>
                           <span className={styles.categoryAmount}>
                             {formatAmount(amount)}
                           </span>
@@ -751,37 +754,37 @@ export default function SummaryClient() {
             </>
           ) : (
             <>
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-value">
+              <div className={statStyles.statsGrid}>
+                <div className={statStyles.statCard}>
+                  <div className={statStyles.statValue}>
                     {formatAmount(yearEndNetworth)}
                   </div>
-                  <div className="stat-label">연말 순자산</div>
+                  <div className={statStyles.statLabel}>연말 순자산</div>
                 </div>
-                <div className="stat-card">
+                <div className={statStyles.statCard}>
                   <div
-                    className={`stat-value ${networthChange >= 0 ? "text-medium-pink" : "text-red-500"}`}
+                    className={clsx(statStyles.statValue, networthChange >= 0 ? "text-medium-pink" : "text-red-500")}
                   >
                     {networthChange >= 0 ? "+" : ""}
                     {formatAmount(networthChange)}
                   </div>
-                  <div className="stat-label">전년 대비</div>
+                  <div className={statStyles.statLabel}>전년 대비</div>
                 </div>
-                <div className="stat-card">
+                <div className={statStyles.statCard}>
                   <div
-                    className={`stat-value ${Number(networthChangeRate) >= 0 ? "text-medium-pink" : "text-red-500"}`}
+                    className={clsx(statStyles.statValue, Number(networthChangeRate) >= 0 ? "text-medium-pink" : "text-red-500")}
                   >
                     {networthChangeRate}%
                   </div>
-                  <div className="stat-label">자산 증가율</div>
+                  <div className={statStyles.statLabel}>자산 증가율</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value">
+                <div className={statStyles.statCard}>
+                  <div className={statStyles.statValue}>
                     {networthMonthly[11]?.savings > 0
                       ? formatAmount(networthMonthly[11].savings)
                       : "-"}
                   </div>
-                  <div className="stat-label">누적 저축</div>
+                  <div className={statStyles.statLabel}>누적 저축</div>
                 </div>
               </div>
 

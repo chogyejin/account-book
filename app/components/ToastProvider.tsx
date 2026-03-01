@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
+import toastStyles from "./Toast.module.css";
 
 export type ToastType = "success" | "error" | "warning";
 
@@ -47,7 +48,7 @@ export default function ToastProvider({
     <ToastContext.Provider value={{ showToast }}>
       {children}
       {toasts.map((toast) => (
-        <div key={toast.id} className={`toast ${toast.type}`}>
+        <div key={toast.id} className={`${toastStyles.toast} ${toastStyles[toast.type]}`}>
           {toast.message}
         </div>
       ))}

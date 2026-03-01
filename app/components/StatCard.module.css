@@ -1,0 +1,114 @@
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statsGrid5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .statsGrid5 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .statsGrid5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.statCard {
+  background: linear-gradient(135deg, #ffffff 0%, #fffbfc 100%);
+  border-radius: 16px;
+  padding: 1.75rem;
+  text-align: center;
+  box-shadow:
+    0 4px 12px rgba(232, 180, 188, 0.12),
+    0 2px 4px rgba(107, 107, 107, 0.08);
+  border: 1px solid rgba(232, 180, 188, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: statFadeIn 0.6s ease-out both;
+}
+
+.statCard:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.statCard:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.statCard:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.statCard:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.statCard:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 8px 24px rgba(232, 180, 188, 0.18),
+    0 4px 8px rgba(107, 107, 107, 0.12);
+  border-color: var(--medium-pink);
+}
+
+.statLabel {
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--gray-light);
+  margin-bottom: 0.75rem;
+}
+
+.statValue {
+  font-family:
+    "Pretendard",
+    -apple-system,
+    sans-serif;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--gray);
+  animation: numberCountUp 0.8s ease-out;
+}
+
+.statValue.positive {
+  color: var(--medium-pink);
+}
+
+.statValue.negative {
+  color: var(--gray-light);
+}
+
+@keyframes statFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes numberCountUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}

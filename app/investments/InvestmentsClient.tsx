@@ -16,6 +16,7 @@ import {
   type AssetHolding,
 } from "../../lib/investment-calculator";
 import styles from "./Investments.module.css";
+import statStyles from "@/app/components/StatCard.module.css";
 
 const emptyTxnForm = () => ({
   date: getTodayString(),
@@ -201,22 +202,22 @@ export default function InvestmentsClient() {
   return (
     <>
       {/* Stats Grid */}
-      <div className="stats-grid" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
-        <div className="stat-card">
-          <div className="stat-value">
+      <div className={clsx(statStyles.statsGrid, statStyles.statsGrid5)}>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>
             {portfolio.totalPortfolioKRW > 0 ? formatAmount(portfolio.totalPortfolioKRW) : "-"}
           </div>
-          <div className="stat-label">총 포트폴리오</div>
+          <div className={statStyles.statLabel}>총 포트폴리오</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>
             {formatAmount(portfolio.cashKRW)}
           </div>
-          <div className="stat-label">현금 잔고</div>
+          <div className={statStyles.statLabel}>현금 잔고</div>
         </div>
-        <div className="stat-card">
+        <div className={statStyles.statCard}>
           <div
-            className={clsx("stat-value", portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfit) : "")}
+            className={clsx(statStyles.statValue, portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfit) : "")}
           >
             {portfolio.totalInvestedKRW > 0 ? formatAmount(portfolio.totalProfit) : "-"}
           </div>
@@ -225,21 +226,21 @@ export default function InvestmentsClient() {
               실현 {formatAmount(portfolio.realizedProfit)} / 미실현 {formatAmount(portfolio.unrealizedProfit)}
             </div>
           )}
-          <div className="stat-label">총 수익</div>
+          <div className={statStyles.statLabel}>총 수익</div>
         </div>
-        <div className="stat-card">
+        <div className={statStyles.statCard}>
           <div
             className={clsx(
-              "stat-value",
+              statStyles.statValue,
               portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfitRate) : "",
             )}
           >
             {portfolio.totalInvestedKRW > 0 ? formatProfitRate(portfolio.totalProfitRate) : "-"}
           </div>
-          <div className="stat-label">수익률</div>
+          <div className={statStyles.statLabel}>수익률</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value" style={{ fontSize: "1.1rem" }}>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue} style={{ fontSize: "1.1rem" }}>
             <input
               type="number"
               value={exchangeRate}
@@ -249,7 +250,7 @@ export default function InvestmentsClient() {
               className={styles.exchangeRateInput}
             />
           </div>
-          <div className="stat-label">환율 (원/달러)</div>
+          <div className={statStyles.statLabel}>환율 (원/달러)</div>
         </div>
       </div>
 

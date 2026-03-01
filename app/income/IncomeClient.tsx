@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
+import statStyles from "@/app/components/StatCard.module.css";
+import catStyles from "@/app/components/CategoryTag.module.css";
 import { Card, CardHeader } from "../components/Card";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
@@ -161,24 +163,24 @@ export default function IncomeClient() {
 
   return (
     <>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{formatAmount(totalIncome)}</div>
-          <div className="stat-label">이번 달 총 수입</div>
+      <div className={statStyles.statsGrid}>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{formatAmount(totalIncome)}</div>
+          <div className={statStyles.statLabel}>이번 달 총 수입</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{formatAmount(salary)}</div>
-          <div className="stat-label">급여</div>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{formatAmount(salary)}</div>
+          <div className={statStyles.statLabel}>급여</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{formatAmount(additional)}</div>
-          <div className="stat-label">기타 수입</div>
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>{formatAmount(additional)}</div>
+          <div className={statStyles.statLabel}>기타 수입</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">
+        <div className={statStyles.statCard}>
+          <div className={statStyles.statValue}>
             {formatAmount(Math.round(avgIncome))}
           </div>
-          <div className="stat-label">월 평균 (3개월)</div>
+          <div className={statStyles.statLabel}>월 평균 (3개월)</div>
         </div>
       </div>
 
@@ -190,7 +192,7 @@ export default function IncomeClient() {
 
       <Card>
         <CardHeader title="필터 & 검색" icon="🔍" />
-        <div className="grid grid-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormSelect
             label="기간"
             value={periodFilter}
@@ -262,8 +264,8 @@ export default function IncomeClient() {
                       <td className="p-3">
                         <span
                           className={clsx(
-                            "category-tag",
-                            item.category === "급여" && "selected",
+                            catStyles.categoryTag,
+                            item.category === "급여" && catStyles.selected,
                           )}
                         >
                           {item.category}
@@ -304,7 +306,7 @@ export default function IncomeClient() {
             <ModalClose onClick={() => setModalOpen(false)} />
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
                 type="date"
                 label="📅 날짜"

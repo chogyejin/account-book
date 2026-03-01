@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import tabStyles from "./QuickEntry.module.css";
 import { Card, CardHeader } from "./components/Card";
 import Button from "./components/Button";
 import FormInput from "./components/FormInput";
@@ -31,11 +32,11 @@ export default function QuickEntryClient() {
 
   return (
     <>
-      <div className="tabs">
+      <div className={tabStyles.tabs}>
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            className={`tab${activeTab === tab.id ? " active" : ""}`}
+            className={`${tabStyles.tab}${activeTab === tab.id ? ` ${tabStyles.active}` : ""}`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -51,7 +52,7 @@ export default function QuickEntryClient() {
             </span>
           </CardHeader>
           <form onSubmit={expense.handleSubmit}>
-            <div className="grid grid-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
                 type="date"
                 label="📅 날짜"
@@ -103,7 +104,7 @@ export default function QuickEntryClient() {
             </span>
           </CardHeader>
           <form onSubmit={income.handleSubmit}>
-            <div className="grid grid-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
                 type="date"
                 label="📅 날짜"
@@ -155,7 +156,7 @@ export default function QuickEntryClient() {
             </span>
           </CardHeader>
           <form onSubmit={savings.handleSubmit}>
-            <div className="grid grid-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
                 type="date"
                 label="📅 날짜"
@@ -216,7 +217,7 @@ export default function QuickEntryClient() {
             </span>
           </CardHeader>
           <form onSubmit={investment.handleSubmit}>
-            <div className="grid grid-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormInput
                 type="date"
                 label="📅 날짜"
@@ -243,7 +244,7 @@ export default function QuickEntryClient() {
             </div>
             {investment.form.type !== "입금" && investment.form.type !== "출금" && (
               <>
-                <div className="grid grid-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormInput
                     type="text"
                     label="🔑 종목 ID"
@@ -265,7 +266,7 @@ export default function QuickEntryClient() {
                     required
                   />
                 </div>
-                <div className="grid grid-2" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormInput
                     type="number"
                     label="📦 수량"
@@ -345,7 +346,7 @@ export default function QuickEntryClient() {
 
       {isLoading && (
         <div
-          className="spinner"
+          className={tabStyles.spinner}
           style={{
             position: "fixed",
             top: "50%",
