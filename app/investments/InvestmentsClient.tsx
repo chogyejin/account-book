@@ -38,6 +38,7 @@ export default function InvestmentsClient() {
   const [currentPrices, setCurrentPrices] = useState<Record<string, number>>({});
 
   const [pricesLoading, setPricesLoading] = useState(false);
+  const [pricesInitialized, setPricesInitialized] = useState(false);
   const [errorAssets, setErrorAssets] = useState<Set<string>>(new Set());
 
   const [txnFilter, setTxnFilter] = useState("전체");
@@ -62,7 +63,10 @@ export default function InvestmentsClient() {
         txns.map((t) => [t.assetId, { assetId: String(t.assetId), market: t.market }]),
       ).values(),
     ];
-    if (uniqueAssets.length === 0) return;
+    if (uniqueAssets.length === 0) {
+      setPricesInitialized(true);
+      return;
+    }
     setPricesLoading(true);
     try {
       const res = await fetch("/api/market/prices", {
@@ -79,6 +83,7 @@ export default function InvestmentsClient() {
       // 무시
     } finally {
       setPricesLoading(false);
+      setPricesInitialized(true);
     }
   }, []);
 
@@ -205,7 +210,7 @@ export default function InvestmentsClient() {
       <div className={clsx(statStyles.statsGrid, statStyles.statsGrid5)}>
         <div className={statStyles.statCard}>
           <div className={statStyles.statValue}>
-            {portfolio.totalPortfolioKRW > 0 ? formatAmount(portfolio.totalPortfolioKRW) : "-"}
+            {pricesInitialized && portfolio.totalPortfolioKRW > 0 ? formatAmount(portfolio.totalPortfolioKRW) : "-"}
           </div>
           <div className={statStyles.statLabel}>총 포트폴리오</div>
         </div>
@@ -217,11 +222,11 @@ export default function InvestmentsClient() {
         </div>
         <div className={statStyles.statCard}>
           <div
-            className={clsx(statStyles.statValue, portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfit) : "")}
+            className={clsx(statStyles.statValue, pricesInitialized && portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfit) : "")}
           >
-            {portfolio.totalInvestedKRW > 0 ? formatAmount(portfolio.totalProfit) : "-"}
+            {pricesInitialized && portfolio.totalInvestedKRW > 0 ? formatAmount(portfolio.totalProfit) : "-"}
           </div>
-          {portfolio.totalInvestedKRW > 0 && (
+          {pricesInitialized && portfolio.totalInvestedKRW > 0 && (
             <div style={{ fontSize: "0.7rem", color: "var(--gray-light)", textAlign: "center", marginTop: 2 }}>
               실현 {formatAmount(portfolio.realizedProfit)} / 미실현 {formatAmount(portfolio.unrealizedProfit)}
             </div>
@@ -232,10 +237,10 @@ export default function InvestmentsClient() {
           <div
             className={clsx(
               statStyles.statValue,
-              portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfitRate) : "",
+              pricesInitialized && portfolio.totalInvestedKRW > 0 ? profitClass(portfolio.totalProfitRate) : "",
             )}
           >
-            {portfolio.totalInvestedKRW > 0 ? formatProfitRate(portfolio.totalProfitRate) : "-"}
+            {pricesInitialized && portfolio.totalInvestedKRW > 0 ? formatProfitRate(portfolio.totalProfitRate) : "-"}
           </div>
           <div className={statStyles.statLabel}>수익률</div>
         </div>
