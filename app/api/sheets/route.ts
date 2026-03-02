@@ -162,6 +162,7 @@ export async function GET(request: NextRequest) {
           "createdAt",
           "market",
         ],
+        accounts: ["id", "name", "balance", "currency", "updatedAt"],
       };
 
       const data = rowsToObjects(rows, headers[sheet] || []);

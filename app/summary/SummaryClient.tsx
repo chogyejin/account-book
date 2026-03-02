@@ -412,8 +412,10 @@ export default function SummaryClient() {
                   <div className={statStyles.statLabel}>지출률</div>
                 </div>
                 <div className={statStyles.statCard}>
-                  <div className={statStyles.statValue}>{monthExpenses.length}건</div>
-                  <div className={statStyles.statLabel}>지출 횟수</div>
+                  <div className={clsx(statStyles.statValue, mBalance >= 0 ? "" : "text-red-500")} style={{ fontSize: "1.1rem" }}>
+                    {formatAmount(mBalance)}
+                  </div>
+                  <div className={statStyles.statLabel}>가용 금액</div>
                 </div>
               </div>
             </div>

@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
+import { getGoogleSheetsClient, SPREADSHEET_ID } from "@/lib/google-sheets-client";
 
 export async function GET() {
   try {
-    const res = await fetch("https://api.frankfurter.app/latest?from=USD&to=KRW", {
-      cache: "no-store",
+    const sheets = getGoogleSheetsClient();
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: "investments_transactions!L1",
     });
-    if (!res.ok) throw new Error("환율 조회 실패");
-    const data = await res.json();
-    const rate: number = data.rates?.KRW;
-    if (!rate) throw new Error("KRW 환율 없음");
+    const value = response.data.values?.[0]?.[0];
+    const rate = Number(value);
+    if (!rate) throw new Error("환율 값이 없거나 유효하지 않습니다");
     return NextResponse.json({ success: true, rate });
   } catch (error) {
     return NextResponse.json(
@@ -17,3 +19,5 @@ export async function GET() {
     );
   }
 }
+
+export const dynamic = "force-dynamic";

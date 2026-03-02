@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import clsx from "clsx";
 import { Card, CardHeader, CardBody } from "../components/Card";
+import CurrencyInput from "../components/CurrencyInput";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
 import FormSelect from "../components/FormSelect";
@@ -33,8 +34,10 @@ const emptyTxnForm = () => ({
 export default function InvestmentsClient() {
   const { showToast } = useToast();
   const [transactions, setTransactions] = useState<InvestmentTransaction[]>([]);
+  const [cashKRW, setCashKRW] = useState(0);
+  const [cashUSD, setCashUSD] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [exchangeRate, setExchangeRate] = useState(1300);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [currentPrices, setCurrentPrices] = useState<Record<string, number>>({});
 
   const [pricesLoading, setPricesLoading] = useState(false);
@@ -87,6 +90,24 @@ export default function InvestmentsClient() {
     }
   }, []);
 
+  const fetchAccounts = useCallback(async () => {
+    try {
+      const result = await SheetsAPI.accounts.list();
+      if (result.success && result.data) {
+        const krw = result.data
+          .filter((a) => a.currency === "KRW")
+          .reduce((s, a) => s + (Number(a.balance) || 0), 0);
+        const usd = result.data
+          .filter((a) => a.currency === "USD")
+          .reduce((s, a) => s + (Number(a.balance) || 0), 0);
+        setCashKRW(krw);
+        setCashUSD(usd);
+      }
+    } catch {
+      // 실패 시 기본값(0) 유지
+    }
+  }, []);
+
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
@@ -108,12 +129,13 @@ export default function InvestmentsClient() {
 
   useEffect(() => {
     fetchTransactions();
+    fetchAccounts();
     fetchExchangeRate();
-  }, [fetchTransactions, fetchExchangeRate]);
+  }, [fetchTransactions, fetchAccounts, fetchExchangeRate]);
 
   const portfolio = useMemo(
-    () => calculatePortfolio(transactions, currentPrices, exchangeRate),
-    [transactions, currentPrices, exchangeRate],
+    () => calculatePortfolio(transactions, currentPrices, exchangeRate ?? 0, cashKRW, cashUSD),
+    [transactions, currentPrices, exchangeRate, cashKRW, cashUSD],
   );
 
   const filteredTransactions = useMemo(
@@ -246,14 +268,16 @@ export default function InvestmentsClient() {
         </div>
         <div className={statStyles.statCard}>
           <div className={statStyles.statValue} style={{ fontSize: "1.1rem" }}>
-            <input
-              type="number"
-              value={exchangeRate}
-              min={0}
-              step={1}
-              onChange={(e) => setExchangeRate(Number(e.target.value) || 0)}
-              className={styles.exchangeRateInput}
-            />
+            {exchangeRate === null ? "-" : (
+              <input
+                type="number"
+                value={exchangeRate}
+                min={0}
+                step={1}
+                onChange={(e) => setExchangeRate(Number(e.target.value) || 0)}
+                className={styles.exchangeRateInput}
+              />
+            )}
           </div>
           <div className={statStyles.statLabel}>환율 (원/달러)</div>
         </div>
@@ -699,16 +723,26 @@ export default function InvestmentsClient() {
                         <option value="USD">USD (달러)</option>
                       </FormSelect>
                     )}
-                    <FormInput
-                      label="💵 금액"
-                      type="number"
-                      placeholder="1000000"
-                      min="0"
-                      step="0.01"
-                      value={txnForm.amount}
-                      onChange={(e) => setTxnForm({ ...txnForm, amount: e.target.value })}
-                      required
-                    />
+                    {txnForm.currency === "KRW" ? (
+                      <CurrencyInput
+                        label="💵 금액"
+                        placeholder="1,000,000"
+                        value={txnForm.amount}
+                        onChange={(e) => setTxnForm({ ...txnForm, amount: e.target.value })}
+                        required
+                      />
+                    ) : (
+                      <FormInput
+                        label="💵 금액"
+                        type="number"
+                        placeholder="1000.00"
+                        min="0"
+                        step="0.01"
+                        value={txnForm.amount}
+                        onChange={(e) => setTxnForm({ ...txnForm, amount: e.target.value })}
+                        required
+                      />
+                    )}
                     <FormTextarea
                       label="📝 메모"
                       placeholder="거래 메모"

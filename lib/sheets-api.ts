@@ -50,6 +50,14 @@ export interface InvestmentTransaction {
   market: string;      // "KR" | "US"
 }
 
+export interface Account {
+  id: string;
+  name: string;
+  balance: string;
+  currency: string;    // "KRW" | "USD"
+  updatedAt: string;
+}
+
 // ─── Low-level helpers ────────────────────────────────────────────────────────
 
 async function sheetsGet<T>(sheet: string): Promise<ApiResponse<T>> {
@@ -103,6 +111,10 @@ export const SheetsAPI = {
 
     delete: (id: string) =>
       sheetsPost({ sheet: "savings", action: "delete", id }),
+  },
+
+  accounts: {
+    list: () => sheetsGet<Account[]>("accounts"),
   },
 
   investments: {

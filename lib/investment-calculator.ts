@@ -42,6 +42,8 @@ export function calculatePortfolio(
   transactions: InvestmentTransaction[],
   currentPrices: Record<string, number>,
   exchangeRate: number,
+  cashKRW: number,
+  cashUSD: number,
 ): PortfolioSummary {
   // 평균단가법 실현손익 계산을 위해 날짜순 정렬
   const sorted = [...transactions].sort(
@@ -59,25 +61,15 @@ export function calculatePortfolio(
   }
 
   const assetMap = new Map<string, AssetState>();
-  let cashKRW = 0;
-  let cashUSD = 0;
   let totalBuyAmountKRW = 0;
 
   for (const t of sorted) {
     const amount = Number(t.amount) || 0;
     const qty = Number(t.quantity) || 0;
     const currency = t.currency || "KRW";
-    const isUSD = currency === "USD";
 
-    // 현금 입출금
-    if (t.type === "입금") {
-      isUSD ? (cashUSD += amount) : (cashKRW += amount);
-      continue;
-    }
-    if (t.type === "출금") {
-      isUSD ? (cashUSD -= amount) : (cashKRW -= amount);
-      continue;
-    }
+    // 입금/출금은 accounts 시트에서 관리하므로 건너뜀
+    if (t.type === "입금" || t.type === "출금") continue;
 
     if (!t.assetId) continue;
 
@@ -99,7 +91,6 @@ export function calculatePortfolio(
       state.cost += amount;
       state.qty += qty;
       if (qty > 0) state.buyPrices.push(amount / qty);
-      isUSD ? (cashUSD -= amount) : (cashKRW -= amount);
       totalBuyAmountKRW += toKRW(amount, currency, exchangeRate);
     } else if (t.type === "매도") {
       // 평균단가법: 매도 시점의 평균단가로 실현손익 계산
@@ -108,7 +99,6 @@ export function calculatePortfolio(
       state.realizedProfit += amount - costBasis;
       state.cost = Math.max(0, state.cost - costBasis);
       state.qty = Math.max(0, state.qty - qty);
-      isUSD ? (cashUSD += amount) : (cashKRW += amount);
     }
   }
 

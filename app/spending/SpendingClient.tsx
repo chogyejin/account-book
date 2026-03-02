@@ -10,7 +10,8 @@ import Modal, { ModalClose } from "../components/Modal";
 import { useToast } from "../components/ToastProvider";
 import { CONFIG } from "../../lib/config";
 import { formatAmount, getTodayString } from "../../lib/utils";
-import { SheetsAPI, type Expense } from "../../lib/sheets-api";
+import { SheetsAPI, type Expense, type IncomeItem, type SavingsItem, type InvestmentTransaction } from "../../lib/sheets-api";
+import CurrencyInput from "../components/CurrencyInput";
 import clsx from "clsx";
 import styles from "./Spending.module.css";
 import statStyles from "@/app/components/StatCard.module.css";
@@ -19,6 +20,9 @@ import catStyles from "@/app/components/CategoryTag.module.css";
 export default function SpendingClient() {
   const { showToast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [incomes, setIncomes] = useState<IncomeItem[]>([]);
+  const [savings, setSavings] = useState<SavingsItem[]>([]);
+  const [investments, setInvestments] = useState<InvestmentTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,24 +36,35 @@ export default function SpendingClient() {
   });
 
   useEffect(() => {
-    const fetchExpenses = async () => {
+    const fetchAll = async () => {
       setLoading(true);
       try {
-        const result = await SheetsAPI.expenses.list();
-        if (result.success && result.data) {
-          const data = result.data.filter((e) => e.id);
+        const [expData, incData, savData, invData] = await Promise.all([
+          SheetsAPI.expenses.list(),
+          SheetsAPI.income.list(),
+          SheetsAPI.savings.list(),
+          SheetsAPI.investments.list(),
+        ]);
+        if (expData.success && expData.data) {
+          const data = expData.data.filter((e) => e.id);
           data.sort(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
           );
           setExpenses(data);
         }
+        if (incData.success && incData.data)
+          setIncomes(incData.data.filter((i) => i.id));
+        if (savData.success && savData.data)
+          setSavings(savData.data.filter((i) => i.id));
+        if (invData.success && invData.data)
+          setInvestments(invData.data.filter((i) => i.id));
       } catch {
         showToast("데이터를 불러오지 못했습니다 ❌", "error");
       } finally {
         setLoading(false);
       }
     };
-    fetchExpenses();
+    fetchAll();
   }, [showToast]);
 
   const now = new Date();
@@ -68,6 +83,17 @@ export default function SpendingClient() {
   ).getDate();
   const dailyAvg =
     daysInMonth > 0 ? Math.round(totalThisMonth / daysInMonth) : 0;
+
+  const thisMonthIncomeTotal = incomes
+    .filter((i) => i.date.startsWith(currentMonth))
+    .reduce((sum, i) => sum + Number(i.amount), 0);
+  const thisMonthSavingsTotal = savings
+    .filter((s) => s.date.startsWith(currentMonth))
+    .reduce((sum, s) => sum + Number(s.amount), 0);
+  const thisMonthInvestTotal = investments
+    .filter((i) => i.date.startsWith(currentMonth) && i.type === "매수")
+    .reduce((sum, i) => sum + Number(i.amount), 0);
+  const availableAmount = thisMonthIncomeTotal - totalThisMonth - thisMonthSavingsTotal - thisMonthInvestTotal;
 
   const categoryTotals = thisMonthExpenses.reduce<Record<string, number>>(
     (acc, e) => {
@@ -157,8 +183,10 @@ export default function SpendingClient() {
           <div className={statStyles.statLabel}>최다 지출 카테고리</div>
         </div>
         <div className={statStyles.statCard}>
-          <div className={statStyles.statValue}>{thisMonthExpenses.length}건</div>
-          <div className={statStyles.statLabel}>이번 달 지출 횟수</div>
+          <div className={clsx(statStyles.statValue, availableAmount < 0 ? "text-red-500" : "")} style={{ fontSize: "1.1rem" }}>
+            {formatAmount(availableAmount)}
+          </div>
+          <div className={statStyles.statLabel}>이번 달 가용 금액</div>
         </div>
       </div>
 
@@ -308,8 +336,7 @@ export default function SpendingClient() {
                 }
                 required
               />
-              <FormInput
-                type="number"
+              <CurrencyInput
                 label="💵 금액"
                 value={editForm.amount}
                 onChange={(e) =>

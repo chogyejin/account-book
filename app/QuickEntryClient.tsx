@@ -5,6 +5,7 @@ import tabStyles from "./QuickEntry.module.css";
 import { Card, CardHeader } from "./components/Card";
 import Button from "./components/Button";
 import FormInput from "./components/FormInput";
+import CurrencyInput from "./components/CurrencyInput";
 import FormSelect from "./components/FormSelect";
 import FormTextarea from "./components/FormTextarea";
 import CategoryTag from "./components/CategoryTag";
@@ -62,11 +63,9 @@ export default function QuickEntryClient() {
                 }
                 required
               />
-              <FormInput
-                type="number"
+              <CurrencyInput
                 label="💵 금액"
-                placeholder="15000"
-                min="0"
+                placeholder="15,000"
                 value={expense.form.amount}
                 onChange={(e) =>
                   expense.setForm({ ...expense.form, amount: e.target.value })
@@ -114,11 +113,9 @@ export default function QuickEntryClient() {
                 }
                 required
               />
-              <FormInput
-                type="number"
+              <CurrencyInput
                 label="💵 금액"
-                placeholder="3500000"
-                min="0"
+                placeholder="3,500,000"
                 value={income.form.amount}
                 onChange={(e) =>
                   income.setForm({ ...income.form, amount: e.target.value })
@@ -166,11 +163,9 @@ export default function QuickEntryClient() {
                 }
                 required
               />
-              <FormInput
-                type="number"
+              <CurrencyInput
                 label="💵 금액"
-                placeholder="500000"
-                min="0"
+                placeholder="500,000"
                 value={savings.form.amount}
                 onChange={(e) =>
                   savings.setForm({ ...savings.form, amount: e.target.value })
@@ -317,18 +312,30 @@ export default function QuickEntryClient() {
                 <option value="USD">USD (달러)</option>
               </FormSelect>
             )}
-            <FormInput
-              type="number"
-              label="💵 거래금액"
-              placeholder="1000000"
-              min="0"
-              step="0.01"
-              value={investment.form.amount}
-              onChange={(e) =>
-                investment.setForm({ ...investment.form, amount: e.target.value })
-              }
-              required
-            />
+            {investment.form.currency === "KRW" ? (
+              <CurrencyInput
+                label="💵 거래금액"
+                placeholder="1,000,000"
+                value={investment.form.amount}
+                onChange={(e) =>
+                  investment.setForm({ ...investment.form, amount: e.target.value })
+                }
+                required
+              />
+            ) : (
+              <FormInput
+                type="number"
+                label="💵 거래금액"
+                placeholder="1000.00"
+                min="0"
+                step="0.01"
+                value={investment.form.amount}
+                onChange={(e) =>
+                  investment.setForm({ ...investment.form, amount: e.target.value })
+                }
+                required
+              />
+            )}
             <FormTextarea
               label="📝 메모"
               placeholder="거래 메모"

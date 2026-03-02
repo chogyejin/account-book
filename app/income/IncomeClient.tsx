@@ -7,6 +7,7 @@ import catStyles from "@/app/components/CategoryTag.module.css";
 import { Card, CardHeader } from "../components/Card";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
+import CurrencyInput from "../components/CurrencyInput";
 import FormSelect from "../components/FormSelect";
 import FormTextarea from "../components/FormTextarea";
 import Modal, { ModalClose } from "../components/Modal";
@@ -314,11 +315,9 @@ export default function IncomeClient() {
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
                 required
               />
-              <FormInput
-                type="number"
+              <CurrencyInput
                 label="💵 금액"
-                placeholder="3500000"
-                min="0"
+                placeholder="3,500,000"
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 required

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardHeader } from "../components/Card";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
+import CurrencyInput from "../components/CurrencyInput";
 import FormSelect from "../components/FormSelect";
 import FormTextarea from "../components/FormTextarea";
 import Modal, { ModalClose } from "../components/Modal";
@@ -321,12 +322,9 @@ export default function SavingsClient() {
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
                 required
               />
-              <FormInput
-                type="number"
+              <CurrencyInput
                 label="💵 금액"
-                placeholder="500000"
-                min="0"
-                step="1000"
+                placeholder="500,000"
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 required
