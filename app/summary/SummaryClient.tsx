@@ -83,8 +83,11 @@ export default function SummaryClient() {
   const monthExpenses = expenses.filter((e) => e.date.startsWith(monthStr));
   const monthIncomes = incomes.filter((i) => i.date.startsWith(monthStr));
   const monthSavings = savings.filter((s) => s.date.startsWith(monthStr));
-  const monthInvestments = investments.filter(
-    (i) => i.date.startsWith(monthStr) && i.type === "매수",
+  const monthInvestOut = investments.filter(
+    (i) => i.date.startsWith(monthStr) && i.type === "출금",
+  );
+  const monthInvestIn = investments.filter(
+    (i) => i.date.startsWith(monthStr) && i.type === "입금",
   );
 
   const mTotalIncome = monthIncomes.reduce(
@@ -99,11 +102,21 @@ export default function SummaryClient() {
     (sum, s) => sum + Number(s.amount),
     0,
   );
-  const mTotalInvestments = monthInvestments.reduce(
+
+  const mTotalInvestOut = monthInvestOut.reduce(
     (sum, i) => sum + Number(i.amount),
     0,
   );
-  const mBalance = mTotalIncome - mTotalExpense - mTotalSavings - mTotalInvestments;
+  const mTotalInvestIn = monthInvestIn.reduce(
+    (sum, i) => sum + Number(i.amount),
+    0,
+  );
+  const mBalance =
+    mTotalIncome -
+    mTotalExpense -
+    mTotalSavings -
+    mTotalInvestOut +
+    mTotalInvestIn;
   const mExpenseRate =
     mTotalIncome > 0
       ? ((mTotalExpense / mTotalIncome) * 100).toFixed(1)
@@ -198,13 +211,19 @@ export default function SummaryClient() {
     const inv = yearInvestments
       .filter((i) => i.date.startsWith(mStr))
       .reduce((s, i) => s + Number(i.amount), 0);
+    const investOut = investments
+      .filter((i) => i.date.startsWith(mStr) && i.type === "출금")
+      .reduce((s, i) => s + Number(i.amount), 0);
+    const investIn = investments
+      .filter((i) => i.date.startsWith(mStr) && i.type === "입금")
+      .reduce((s, i) => s + Number(i.amount), 0);
     return {
       month: `${m}월`,
       income: inc,
       expense: exp,
       savings: sav,
       investment: inv,
-      balance: inc - exp - sav - inv,
+      balance: inc - exp - sav - investOut + investIn,
       savingsRate: inc > 0 ? ((sav / inc) * 100).toFixed(1) : "0.0",
     };
   });
@@ -295,9 +314,7 @@ export default function SummaryClient() {
   })();
   const networthChange = yearEndNetworth - prevYearEnd;
   const networthChangeRate =
-    prevYearEnd > 0
-      ? ((networthChange / prevYearEnd) * 100).toFixed(1)
-      : "0.0";
+    prevYearEnd > 0 ? ((networthChange / prevYearEnd) * 100).toFixed(1) : "0.0";
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
@@ -356,7 +373,10 @@ export default function SummaryClient() {
       ) : viewType === "monthly" ? (
         // ── Monthly view ──────────────────────────────────────────────────
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ marginTop: "24px" }}>
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            style={{ marginTop: "24px" }}
+          >
             <div>
               <Card className="envelope">
                 <CardHeader title="이번 달 요약" icon="💰" />
@@ -380,12 +400,22 @@ export default function SummaryClient() {
                         {formatAmount(mTotalSavings)}
                       </span>
                     </div>
-                    <div className="stat-row" style={{ marginTop: "8px" }}>
-                      <span className="stat-label-text">📈 투자 매수</span>
-                      <span className="stat-value-text text-pink font-bold">
-                        {formatAmount(mTotalInvestments)}
-                      </span>
-                    </div>
+                    {mTotalInvestOut > 0 && (
+                      <div className="stat-row" style={{ marginTop: "8px" }}>
+                        <span className="stat-label-text">📤 투자 출금</span>
+                        <span className="stat-value-text text-pink font-bold">
+                          {formatAmount(mTotalInvestOut)}
+                        </span>
+                      </div>
+                    )}
+                    {mTotalInvestIn > 0 && (
+                      <div className="stat-row" style={{ marginTop: "8px" }}>
+                        <span className="stat-label-text">📥 투자 입금</span>
+                        <span className="stat-value-text text-pink font-bold">
+                          {formatAmount(mTotalInvestIn)}
+                        </span>
+                      </div>
+                    )}
                     <hr
                       style={{
                         margin: "16px 0",
@@ -393,9 +423,7 @@ export default function SummaryClient() {
                       }}
                     />
                     <div className="stat-row">
-                      <span className="stat-label-text font-bold">
-                        💛 잔액
-                      </span>
+                      <span className="stat-label-text font-bold">💛 잔액</span>
                       <span
                         className="stat-value-text text-pink font-bold"
                         style={{ fontSize: "1.5rem" }}
@@ -406,13 +434,22 @@ export default function SummaryClient() {
                   </div>
                 </div>
               </Card>
-              <div className={statStyles.statsGrid} style={{ marginTop: "16px" }}>
+              <div
+                className={statStyles.statsGrid}
+                style={{ marginTop: "16px" }}
+              >
                 <div className={statStyles.statCard}>
                   <div className={statStyles.statValue}>{mExpenseRate}%</div>
                   <div className={statStyles.statLabel}>지출률</div>
                 </div>
                 <div className={statStyles.statCard}>
-                  <div className={clsx(statStyles.statValue, mBalance >= 0 ? "" : "text-red-500")} style={{ fontSize: "1.1rem" }}>
+                  <div
+                    className={clsx(
+                      statStyles.statValue,
+                      mBalance >= 0 ? "" : "text-red-500",
+                    )}
+                    style={{ fontSize: "1.1rem" }}
+                  >
                     {formatAmount(mBalance)}
                   </div>
                   <div className={statStyles.statLabel}>가용 금액</div>
@@ -440,7 +477,12 @@ export default function SummaryClient() {
                           }}
                         >
                           <div className="category-item-header">
-                            <span className={clsx(catStyles.categoryTag, catStyles.selected)}>
+                            <span
+                              className={clsx(
+                                catStyles.categoryTag,
+                                catStyles.selected,
+                              )}
+                            >
                               {cat.name}
                             </span>
                             <span className="text-pink font-bold">
@@ -485,9 +527,7 @@ export default function SummaryClient() {
                     return (
                       <div key={week.label} className={styles.weekItem}>
                         <div className={styles.weekHeader}>
-                          <span className={styles.weekLabel}>
-                            {week.label}
-                          </span>
+                          <span className={styles.weekLabel}>{week.label}</span>
                         </div>
                         <div className={styles.weekBarContainer}>
                           <div
@@ -566,7 +606,9 @@ export default function SummaryClient() {
             <>
               <div className={statStyles.statsGrid}>
                 <div className={statStyles.statCard}>
-                  <div className={statStyles.statValue}>{formatAmount(aTotalIncome)}</div>
+                  <div className={statStyles.statValue}>
+                    {formatAmount(aTotalIncome)}
+                  </div>
                   <div className={statStyles.statLabel}>연간 총 수입</div>
                 </div>
                 <div className={statStyles.statCard}>
@@ -675,7 +717,9 @@ export default function SummaryClient() {
                     ) : (
                       topExpenseCategories.map(({ category, amount }) => (
                         <div key={category} className={styles.categoryRow}>
-                          <span className={catStyles.categoryTag}>{category}</span>
+                          <span className={catStyles.categoryTag}>
+                            {category}
+                          </span>
                           <span className={styles.categoryAmount}>
                             {formatAmount(amount)}
                           </span>
@@ -709,7 +753,9 @@ export default function SummaryClient() {
                     ) : (
                       incomeCategories.map(({ category, amount }) => (
                         <div key={category} className={styles.categoryRow}>
-                          <span className={catStyles.categoryTag}>{category}</span>
+                          <span className={catStyles.categoryTag}>
+                            {category}
+                          </span>
                           <span className={styles.categoryAmount}>
                             {formatAmount(amount)}
                           </span>
@@ -765,7 +811,10 @@ export default function SummaryClient() {
                 </div>
                 <div className={statStyles.statCard}>
                   <div
-                    className={clsx(statStyles.statValue, networthChange >= 0 ? "text-medium-pink" : "text-red-500")}
+                    className={clsx(
+                      statStyles.statValue,
+                      networthChange >= 0 ? "text-medium-pink" : "text-red-500",
+                    )}
                   >
                     {networthChange >= 0 ? "+" : ""}
                     {formatAmount(networthChange)}
@@ -774,7 +823,12 @@ export default function SummaryClient() {
                 </div>
                 <div className={statStyles.statCard}>
                   <div
-                    className={clsx(statStyles.statValue, Number(networthChangeRate) >= 0 ? "text-medium-pink" : "text-red-500")}
+                    className={clsx(
+                      statStyles.statValue,
+                      Number(networthChangeRate) >= 0
+                        ? "text-medium-pink"
+                        : "text-red-500",
+                    )}
                   >
                     {networthChangeRate}%
                   </div>

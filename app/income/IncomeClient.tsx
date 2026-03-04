@@ -89,14 +89,6 @@ export default function IncomeClient() {
   const additional = thisMonthData
     .filter((i) => i.category !== "급여")
     .reduce((sum, i) => sum + Number(i.amount), 0);
-  const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-  const recentData = allIncomes.filter(
-    (i) => new Date(i.date) >= threeMonthsAgo,
-  );
-  const avgIncome =
-    recentData.length > 0
-      ? recentData.reduce((sum, i) => sum + Number(i.amount), 0) / 3
-      : 0;
 
   const openAddModal = () => {
     setModalTitle("수입 추가");
@@ -166,7 +158,9 @@ export default function IncomeClient() {
     <>
       <div className={statStyles.statsGrid}>
         <div className={statStyles.statCard}>
-          <div className={statStyles.statValue}>{formatAmount(totalIncome)}</div>
+          <div className={statStyles.statValue}>
+            {formatAmount(totalIncome)}
+          </div>
           <div className={statStyles.statLabel}>이번 달 총 수입</div>
         </div>
         <div className={statStyles.statCard}>
@@ -176,12 +170,6 @@ export default function IncomeClient() {
         <div className={statStyles.statCard}>
           <div className={statStyles.statValue}>{formatAmount(additional)}</div>
           <div className={statStyles.statLabel}>기타 수입</div>
-        </div>
-        <div className={statStyles.statCard}>
-          <div className={statStyles.statValue}>
-            {formatAmount(Math.round(avgIncome))}
-          </div>
-          <div className={statStyles.statLabel}>월 평균 (3개월)</div>
         </div>
       </div>
 
