@@ -1,16 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardHeader } from "../components/Card";
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
 import FormSelect from "../components/FormSelect";
 import FormTextarea from "../components/FormTextarea";
+import CategoryTag from "../components/CategoryTag";
 import Modal, { ModalClose } from "../components/Modal";
 import { useToast } from "../components/ToastProvider";
 import { CONFIG } from "../../lib/config";
 import { formatAmount, getTodayString } from "../../lib/utils";
-import { SheetsAPI, type Expense, type IncomeItem, type SavingsItem, type InvestmentTransaction } from "../../lib/sheets-api";
+import API from "../../lib/api";
+import {
+  SheetsAPI,
+  type Expense,
+  type IncomeItem,
+  type SavingsItem,
+  type InvestmentTransaction,
+} from "../../lib/sheets-api";
 import CurrencyInput from "../components/CurrencyInput";
 import clsx from "clsx";
 import styles from "./Spending.module.css";
@@ -34,38 +42,79 @@ export default function SpendingClient() {
     category: "",
     memo: "",
   });
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addForm, setAddForm] = useState({
+    date: getTodayString(),
+    amount: "",
+    memo: "",
+  });
+  const [addCategory, setAddCategory] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [expData, incData, savData, invData] = await Promise.all([
+        SheetsAPI.expenses.list(),
+        SheetsAPI.income.list(),
+        SheetsAPI.savings.list(),
+        SheetsAPI.investments.list(),
+      ]);
+      if (expData.success && expData.data) {
+        const data = expData.data.filter((e) => e.id);
+        data.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
+        setExpenses(data);
+      }
+      if (incData.success && incData.data)
+        setIncomes(incData.data.filter((i) => i.id));
+      if (savData.success && savData.data)
+        setSavings(savData.data.filter((i) => i.id));
+      if (invData.success && invData.data)
+        setInvestments(invData.data.filter((i) => i.id));
+    } catch {
+      showToast("데이터를 불러오지 못했습니다 ❌", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      setLoading(true);
-      try {
-        const [expData, incData, savData, invData] = await Promise.all([
-          SheetsAPI.expenses.list(),
-          SheetsAPI.income.list(),
-          SheetsAPI.savings.list(),
-          SheetsAPI.investments.list(),
-        ]);
-        if (expData.success && expData.data) {
-          const data = expData.data.filter((e) => e.id);
-          data.sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-          );
-          setExpenses(data);
-        }
-        if (incData.success && incData.data)
-          setIncomes(incData.data.filter((i) => i.id));
-        if (savData.success && savData.data)
-          setSavings(savData.data.filter((i) => i.id));
-        if (invData.success && invData.data)
-          setInvestments(invData.data.filter((i) => i.id));
-      } catch {
-        showToast("데이터를 불러오지 못했습니다 ❌", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchAll();
-  }, [showToast]);
+  }, [fetchAll]);
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addCategory) {
+      showToast("카테고리를 선택해주세요 ⚠️", "warning");
+      return;
+    }
+    if (!addForm.date || !addForm.amount) {
+      showToast("날짜와 금액을 입력해주세요 ⚠️", "warning");
+      return;
+    }
+    try {
+      setAddLoading(true);
+      const res = await API.createExpense({
+        ...addForm,
+        category: addCategory,
+      });
+      if (res.success) {
+        showToast("지출이 기록되었습니다 ✅", "success");
+        setAddForm({ date: getTodayString(), amount: "", memo: "" });
+        setAddCategory("");
+        setAddModalOpen(false);
+        await fetchAll();
+      } else {
+        showToast("저장에 실패했습니다 ❌", "error");
+      }
+    } catch {
+      showToast("저장에 실패했습니다 ❌", "error");
+    } finally {
+      setAddLoading(false);
+    }
+  };
 
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -90,10 +139,18 @@ export default function SpendingClient() {
   const thisMonthSavingsTotal = savings
     .filter((s) => s.date.startsWith(currentMonth))
     .reduce((sum, s) => sum + Number(s.amount), 0);
-  const thisMonthInvestTotal = investments
-    .filter((i) => i.date.startsWith(currentMonth) && i.type === "매수")
+  const thisMonthInvestIn = investments
+    .filter((i) => i.date.startsWith(currentMonth) && i.type === "입금")
     .reduce((sum, i) => sum + Number(i.amount), 0);
-  const availableAmount = thisMonthIncomeTotal - totalThisMonth - thisMonthSavingsTotal - thisMonthInvestTotal;
+  const thisMonthInvestOut = investments
+    .filter((i) => i.date.startsWith(currentMonth) && i.type === "출금")
+    .reduce((sum, i) => sum + Number(i.amount), 0);
+  const availableAmount =
+    thisMonthIncomeTotal -
+    totalThisMonth -
+    thisMonthSavingsTotal -
+    thisMonthInvestIn +
+    thisMonthInvestOut;
 
   const categoryTotals = thisMonthExpenses.reduce<Record<string, number>>(
     (acc, e) => {
@@ -171,7 +228,9 @@ export default function SpendingClient() {
     <>
       <div className={statStyles.statsGrid}>
         <div className={statStyles.statCard}>
-          <div className={statStyles.statValue}>{formatAmount(totalThisMonth)}</div>
+          <div className={statStyles.statValue}>
+            {formatAmount(totalThisMonth)}
+          </div>
           <div className={statStyles.statLabel}>이번 달 총 지출</div>
         </div>
         <div className={statStyles.statCard}>
@@ -183,7 +242,13 @@ export default function SpendingClient() {
           <div className={statStyles.statLabel}>최다 지출 카테고리</div>
         </div>
         <div className={statStyles.statCard}>
-          <div className={clsx(statStyles.statValue, availableAmount < 0 ? "text-red-500" : "")} style={{ fontSize: "1.1rem" }}>
+          <div
+            className={clsx(
+              statStyles.statValue,
+              availableAmount < 0 ? "text-red-500" : "",
+            )}
+            style={{ fontSize: "1.1rem" }}
+          >
             {formatAmount(availableAmount)}
           </div>
           <div className={statStyles.statLabel}>이번 달 가용 금액</div>
@@ -222,7 +287,11 @@ export default function SpendingClient() {
             {categoryBreakdown.map((cat) => (
               <div key={cat.name} className={styles.categoryItem}>
                 <div className={styles.categoryItemHeader}>
-                  <span className={clsx(catStyles.categoryTag, catStyles.selected)}>{cat.name}</span>
+                  <span
+                    className={clsx(catStyles.categoryTag, catStyles.selected)}
+                  >
+                    {cat.name}
+                  </span>
                   <span className="text-medium-pink font-semibold">
                     {cat.amount.toLocaleString("ko-KR")}원
                   </span>
@@ -244,7 +313,15 @@ export default function SpendingClient() {
       )}
 
       <Card>
-        <CardHeader title="지출 내역" icon="📝" />
+        <CardHeader title="지출 내역" icon="📝">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setAddModalOpen(true)}
+          >
+            ➕ 지출 기록
+          </Button>
+        </CardHeader>
         {loading ? (
           <div className="text-center py-10 text-gray-light">
             불러오는 중...
@@ -289,7 +366,9 @@ export default function SpendingClient() {
                     >
                       <td className="p-3 text-gray">{exp.date}</td>
                       <td className="p-3">
-                        <span className={catStyles.categoryTag}>{exp.category}</span>
+                        <span className={catStyles.categoryTag}>
+                          {exp.category}
+                        </span>
                       </td>
                       <td className="p-3 text-gray">{exp.memo || "-"}</td>
                       <td className="p-3 text-medium-pink font-semibold">
@@ -319,6 +398,67 @@ export default function SpendingClient() {
           </div>
         )}
       </Card>
+
+      <Modal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)}>
+        <Card>
+          <CardHeader title="지출 기록하기" icon="💸">
+            <ModalClose onClick={() => setAddModalOpen(false)} />
+          </CardHeader>
+          <form onSubmit={handleAddSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormInput
+                type="date"
+                label="📅 날짜"
+                value={addForm.date}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, date: e.target.value })
+                }
+                required
+              />
+              <CurrencyInput
+                label="💵 금액"
+                placeholder="15,000"
+                value={addForm.amount}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, amount: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">🏷️ 카테고리</label>
+              <CategoryTag
+                categories={CONFIG.DEFAULT_CATEGORIES.expense}
+                selectedCategory={addCategory}
+                onSelectCategory={setAddCategory}
+              />
+            </div>
+            <FormTextarea
+              label="📝 메모"
+              placeholder="무엇을 구매하셨나요?"
+              value={addForm.memo}
+              onChange={(e) => setAddForm({ ...addForm, memo: e.target.value })}
+            />
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                variant="primary"
+                block
+                disabled={addLoading}
+              >
+                {addLoading ? "저장 중..." : "✍️ 지출 기록하기"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setAddModalOpen(false)}
+              >
+                취소
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </Modal>
 
       <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)}>
         <Card>
