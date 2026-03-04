@@ -525,16 +525,16 @@ export default function InvestmentsClient() {
                 key={f}
                 onClick={() => setTxnFilter(f)}
                 style={{
-                  padding: "3px 10px",
+                  padding: "4px 14px",
                   borderRadius: "999px",
                   fontSize: "0.78rem",
                   fontWeight: txnFilter === f ? 600 : 400,
-                  border: `1.5px solid ${txnFilter === f ? "var(--primary)" : "var(--border)"}`,
-                  background:
-                    txnFilter === f ? "var(--primary)" : "transparent",
-                  color: txnFilter === f ? "#fff" : "var(--gray)",
+                  border: `1.5px solid ${txnFilter === f ? "var(--medium-pink)" : "var(--beige)"}`,
+                  background: txnFilter === f ? "var(--medium-pink)" : "transparent",
+                  color: txnFilter === f ? "#5a3040" : "var(--gray)",
                   cursor: "pointer",
                   transition: "all 0.15s",
+                  boxShadow: txnFilter === f ? "0 1px 4px rgba(232,180,188,0.4)" : "none",
                 }}
               >
                 {f}
