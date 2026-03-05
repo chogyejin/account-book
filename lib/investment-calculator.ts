@@ -5,27 +5,25 @@ export interface AssetHolding {
   assetName: string;
   currency: string;
   totalQuantity: number;
-  totalInvested: number;        // KRW 환산 (현재 보유 원가)
-  avgPrice: number;             // 원본 통화
-  minBuyPrice: number;
-  maxBuyPrice: number;
+  totalInvested: number; // KRW 환산 (현재 보유 원가)
+  avgPrice: number; // 원본 통화
   currentPrice: number;
-  currentValue: number;         // KRW 환산
+  currentValue: number; // KRW 환산
   currentValueOriginal: number;
-  profit: number;               // KRW (미실현)
-  profitRate: number;           // %
+  profit: number; // KRW (미실현)
+  profitRate: number; // %
 }
 
 export interface PortfolioSummary {
-  totalValueKRW: number;        // 보유주식 현재 평가액
-  totalPortfolioKRW: number;    // 보유주식 + 현금 잔고
-  totalInvestedKRW: number;     // 총 매수금액 (수익률 분모)
-  realizedProfit: number;       // 실현손익 (KRW)
-  unrealizedProfit: number;     // 미실현손익 (KRW)
-  totalProfit: number;          // 실현 + 미실현
-  totalProfitRate: number;      // %
-  cashKRW: number;              // 현금 잔고 (KRW 환산 합계)
-  cashUSD: number;              // USD 현금 잔고 (원본)
+  totalValueKRW: number; // 보유주식 현재 평가액
+  totalPortfolioKRW: number; // 보유주식 + 현금 잔고
+  totalInvestedKRW: number; // 총 매수금액 (수익률 분모)
+  realizedProfit: number; // 실현손익 (KRW)
+  unrealizedProfit: number; // 미실현손익 (KRW)
+  totalProfit: number; // 실현 + 미실현
+  totalProfitRate: number; // %
+  cashKRW: number; // 현금 잔고 (KRW 환산 합계)
+  cashUSD: number; // USD 현금 잔고 (원본)
   currencyRatio: {
     KRW: { amount: number; percentage: number };
     USD: { amount: number; percentage: number };
@@ -55,9 +53,8 @@ export function calculatePortfolio(
     assetName: string;
     currency: string;
     qty: number;
-    cost: number;           // 현재 보유분 원가 (원본 통화)
+    cost: number; // 현재 보유분 원가 (원본 통화)
     realizedProfit: number; // 실현손익 (원본 통화)
-    buyPrices: number[];
   }
 
   const assetMap = new Map<string, AssetState>();
@@ -81,7 +78,6 @@ export function calculatePortfolio(
         qty: 0,
         cost: 0,
         realizedProfit: 0,
-        buyPrices: [],
       });
     }
 
@@ -90,7 +86,6 @@ export function calculatePortfolio(
     if (t.type === "매수") {
       state.cost += amount;
       state.qty += qty;
-      if (qty > 0) state.buyPrices.push(amount / qty);
       totalBuyAmountKRW += toKRW(amount, currency, exchangeRate);
     } else if (t.type === "매도") {
       // 평균단가법: 매도 시점의 평균단가로 실현손익 계산
@@ -109,12 +104,14 @@ export function calculatePortfolio(
     if (state.qty <= 0) continue;
 
     const avgPrice = state.qty > 0 ? state.cost / state.qty : 0;
-    const minBuyPrice = state.buyPrices.length > 0 ? Math.min(...state.buyPrices) : 0;
-    const maxBuyPrice = state.buyPrices.length > 0 ? Math.max(...state.buyPrices) : 0;
 
     const currentPrice = currentPrices[state.assetId] ?? 0;
     const currentValueOriginal = currentPrice * state.qty;
-    const currentValue = toKRW(currentValueOriginal, state.currency, exchangeRate);
+    const currentValue = toKRW(
+      currentValueOriginal,
+      state.currency,
+      exchangeRate,
+    );
 
     const totalInvested = toKRW(state.cost, state.currency, exchangeRate);
     const profit = currentValue - totalInvested;
@@ -127,8 +124,6 @@ export function calculatePortfolio(
       totalQuantity: state.qty,
       totalInvested,
       avgPrice,
-      minBuyPrice,
-      maxBuyPrice,
       currentPrice,
       currentValue,
       currentValueOriginal,

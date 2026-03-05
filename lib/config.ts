@@ -23,7 +23,4 @@ export const CONFIG = {
     savings: ["예금", "적금", "청약", "비상금", "목돈"],
     investment: ["주식", "펀드", "ETF", "채권", "코인"],
   },
-
-  APP_NAME: "감성 재무 다이어리",
-  TOAST_DURATION: 3000,
 };
