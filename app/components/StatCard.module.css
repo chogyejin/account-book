@@ -6,13 +6,7 @@
 }
 
 .statsGrid5 {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-
-@media (max-width: 900px) {
-  .statsGrid5 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 @media (max-width: 600px) {
@@ -26,6 +20,8 @@
   border-radius: 16px;
   padding: 1.75rem;
   text-align: center;
+  min-width: 0;
+  overflow: hidden;
   box-shadow:
     0 4px 12px rgba(232, 180, 188, 0.12),
     0 2px 4px rgba(107, 107, 107, 0.08);
@@ -75,6 +71,9 @@
   font-weight: 700;
   color: var(--gray);
   animation: numberCountUp 0.8s ease-out;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  min-width: 0;
 }
 
 .statValue.positive {
