@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 import styles from "./Nav.module.css";
 
@@ -16,6 +16,12 @@ const NAV_LINKS = [
 
 export default function Nav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+  }
 
   return (
     <nav className={styles.navRibbon}>
@@ -37,6 +43,11 @@ export default function Nav() {
               </Link>
             </li>
           ))}
+          <li>
+            <button onClick={handleLogout} className={styles.navLink}>
+              로그아웃
+            </button>
+          </li>
         </ul>
       </div>
     </nav>

@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
+    secure: process.env.NODE_ENV === "production",
     // 브라우저 닫으면 만료 (세션 쿠키)
   });
   return response;

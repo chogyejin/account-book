@@ -37,6 +37,9 @@
 }
 
 .navLink {
+  background: none;
+  border: none;
+  cursor: pointer;
   padding: 0.5rem 1rem;
   font-family:
     "Pretendard",
