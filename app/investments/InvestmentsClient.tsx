@@ -75,10 +75,12 @@ export default function InvestmentsClient() {
   const fetchAllPrices = useCallback(async (txns: InvestmentTransaction[]) => {
     const uniqueAssets = [
       ...new Map(
-        txns.map((t) => [
-          t.assetId,
-          { assetId: String(t.assetId), market: t.market },
-        ]),
+        txns
+          .filter((t) => t.assetId && t.type !== "입금" && t.type !== "출금")
+          .map((t) => [
+            t.assetId,
+            { assetId: String(t.assetId), market: t.market },
+          ]),
       ).values(),
     ];
     if (uniqueAssets.length === 0) {

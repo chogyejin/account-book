@@ -43,8 +43,10 @@ export async function POST(request: Request) {
       (existingRes.data.values ?? []).flat().map(String),
     );
 
-    // 새 종목만 수식 추가
-    const newAssets = assets.filter((a) => !existingIds.has(String(a.assetId)));
+    // 새 종목만 수식 추가 (빈 assetId 제외)
+    const newAssets = assets.filter(
+      (a) => a.assetId && !existingIds.has(String(a.assetId)),
+    );
     if (newAssets.length > 0) {
       const rows = newAssets.map(({ assetId, market }) => [
         "'" + String(assetId),
