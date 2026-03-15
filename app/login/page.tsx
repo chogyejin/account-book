@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,7 +19,7 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      router.replace("/");
+      window.location.replace("/");
     } else {
       const data = await res.json();
       setError(data.error ?? "오류가 발생했습니다");
